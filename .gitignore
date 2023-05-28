@@ -1,3 +1,8 @@
 /dist/
 /target/
 /Cargo.lock
+
+# Database for dev
+*.db
+*.db-shm
+*.db-wal
