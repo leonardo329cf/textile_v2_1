@@ -38,8 +38,12 @@
         "fullscreen": false,
         "resizable": true,
         "title": "textile_v2_1",
-        "width": 800,
-        "height": 600
+        "height": 768,
+        "minHeight": 768,
+        "maxHeight": 1080,
+        "width": 1024,
+        "minWidth": 1024,
+        "maxWidth": 1920
       }
     ]
   }
