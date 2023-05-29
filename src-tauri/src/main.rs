@@ -6,18 +6,18 @@
 mod db;
 use db::db_connection::DbConnection;
 
+use crate::controllers::about_controller::get_about;
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+mod controllers;
+mod services;
+mod models;
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
     let db_connection = DbConnection::new().await.expect("Error initializing db");
     tauri::Builder::default()
         .manage(db_connection)
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![get_about])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())
