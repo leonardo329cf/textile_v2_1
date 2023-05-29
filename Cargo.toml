@@ -12,6 +12,7 @@ wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
 sycamore = { version = "0.8", features = ["suspense"] }
 sycamore-router = { version = "0.8" }
+web-sys = "0.3.63"
 
 [workspace]
 members = ["src-tauri"]

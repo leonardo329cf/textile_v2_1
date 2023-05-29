@@ -1,4 +1,6 @@
 mod pages;
+mod services;
+mod models;
 
 use sycamore::prelude::*;
 use sycamore_router::{Router, Route, HistoryIntegration};
@@ -8,11 +10,11 @@ use pages::not_found::NotFoundPage;
 
 #[wasm_bindgen]
 extern "C" {
-    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"])]
-    async fn invoke(cmd: &str, args: JsValue) -> JsValue;
+    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"], catch)]
+    pub async fn invoke(cmd: &str, args: JsValue) -> Result<JsValue, JsValue>;
 
     #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
+    pub fn log(s: &str);
 }
 
 #[component]
