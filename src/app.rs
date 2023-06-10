@@ -8,6 +8,8 @@ use wasm_bindgen::prelude::*;
 use pages::home::HomePage;
 use pages::not_found::NotFoundPage;
 
+use crate::app::pages::fabric::FabricListPage;
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"], catch)]
@@ -37,6 +39,7 @@ fn AppNav<G: Html>(cx: Scope) -> View<G> {
             div(id="navMenu", class="navbar-menu") {
                 div(class="navbar-start") {
                     a(class="navbar-item", href="/") { "Sobre" }
+                    a(class="navbar-item", href="/fabric") { "Tecidos" }
                 }
             }
         }
@@ -53,6 +56,7 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                     match route.get().as_ref() {
                         AppRoutes::Index => view! { cx, HomePage {} },
                         AppRoutes::NotFound => view! { cx, NotFoundPage {} },
+                        AppRoutes::FabricList => view! { cx, FabricListPage {} }
                     }
                 )}
             }
@@ -66,4 +70,6 @@ enum AppRoutes {
     Index,
     #[not_found]
     NotFound,
+    #[to("/fabric")]
+    FabricList
 }

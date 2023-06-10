@@ -3,7 +3,7 @@ use sycamore::{prelude::*, futures::spawn_local_scoped};
 use crate::app::{services::about_service::get_about};
 
 #[component]
-pub async fn HomePage<G: Html>(cx: Scope<'_>) -> View<G> {
+pub fn HomePage<G: Html>(cx: Scope<'_>) -> View<G> {
     let error_msg = create_signal(cx, Option::<String>::None);
 
     let about_msg = create_signal(cx, String::new());
