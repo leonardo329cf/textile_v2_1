@@ -2,6 +2,19 @@ use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 const DB_URL: &str = "sqlite://sqlite.db";
 
+const CREATE_FABRIC_SCHEMA_SQL: &str = 
+"CREATE TABLE IF NOT EXISTS fabric (
+    id INTEGER PRIMARY KEY NOT NULL, 
+    name VARCHAR(250) NOT NULL,
+    manufacturer VARCHAR(250),
+    width INTEGER NOT NULL,
+    code VARCHAR(250)
+);";
+
+const DEV_POPULATE_FABRIC_SQL: &str = 
+"INSERT INTO fabric (name, manufacturer, width, code) Values('Tecido Normal', 'Fabricante 1', 4000, '23dfasdv4crgfd');
+INSERT INTO fabric (name, manufacturer, width, code) Values('Tecido Largo', 'Fabricante 1', 5000, 'sdasdasdasd876678');";
+
 pub struct DbConnection {
     pub db: Pool<Sqlite>,
 }
@@ -22,7 +35,13 @@ async fn init_db() -> Pool<Sqlite> {
 
     let db_pool = get_poll().await;
 
-    db_pool.to_owned()
+    execute_query(CREATE_FABRIC_SCHEMA_SQL, &db_pool).await;
+
+    if cfg!(dev) {
+        execute_query(DEV_POPULATE_FABRIC_SQL, &db_pool).await;
+    }
+
+    db_pool
 }
 
 async fn drop_db() {
@@ -51,4 +70,13 @@ async fn create_db() {
 
 async fn get_poll() -> Pool<Sqlite> {
     SqlitePool::connect(DB_URL).await.expect("Failed to connect to db")
+}
+
+async fn execute_query(query: &str, pool: &Pool<Sqlite>) {
+    let result = sqlx::query(query
+    )
+    .execute(pool)
+    .await
+    .unwrap_or_else(|_| panic!("Failed to run query: {}", query));
+    println!("Create schema: {:?}", result);
 }
