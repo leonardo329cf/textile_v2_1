@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 use pages::home::HomePage;
 use pages::not_found::NotFoundPage;
 
-use crate::app::pages::fabric::FabricListPage;
+use crate::app::pages::fabric::{FabricListPage, FabricItemPage};
 
 #[wasm_bindgen]
 extern "C" {
@@ -56,7 +56,10 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                     match route.get().as_ref() {
                         AppRoutes::Index => view! { cx, HomePage {} },
                         AppRoutes::NotFound => view! { cx, NotFoundPage {} },
-                        AppRoutes::FabricList => view! { cx, FabricListPage {} }
+                        AppRoutes::FabricList => view! { cx, FabricListPage {} },
+                        AppRoutes::FabricItem(id) => {
+                            view! {cx, FabricItemPage(id = *id) {}}
+                        }
                     }
                 )}
             }
@@ -71,5 +74,7 @@ enum AppRoutes {
     #[not_found]
     NotFound,
     #[to("/fabric")]
-    FabricList
+    FabricList,
+    #[to("/fabric/<_>")]
+    FabricItem(i32),
 }

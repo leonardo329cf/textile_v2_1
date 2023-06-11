@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use tauri::State;
+use tokio::time::sleep;
 
 use crate::{db::db_connection::DbConnection, models::{fabric::{self, Fabric, FabricCreate}, app_error::{AppError, DEFAULT_ERROR_CODE}}, services::fabric_service}; 
 
@@ -13,6 +16,8 @@ pub async fn get_fabric(id: i32, db_state: State<'_, DbConnection>) -> Result<Fa
 
 #[tauri::command]
 pub async fn get_all_fabric(db_state: State<'_, DbConnection>) -> Result<Vec<Fabric>, AppError> {
+    // Wait for a milisec because it was returning before the table was updated
+    sleep(Duration::from_millis(1)).await; 
     let result = fabric::get_all(&db_state.db).await;
     match result {
         Ok(fab) => Ok(fab),

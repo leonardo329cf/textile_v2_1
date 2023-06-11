@@ -20,8 +20,7 @@ async fn main() -> Result<(), ()> {
         .manage(db_connection)
         .invoke_handler(tauri::generate_handler![
             get_about,
-            get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric
-            ])
+            get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())
