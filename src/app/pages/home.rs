@@ -1,6 +1,6 @@
-use sycamore::{prelude::*, futures::spawn_local_scoped};
+use sycamore::{futures::spawn_local_scoped, prelude::*};
 
-use crate::app::{services::about_service::get_about};
+use crate::app::services::about_service::get_about;
 
 #[component]
 pub fn HomePage<G: Html>(cx: Scope<'_>) -> View<G> {
@@ -10,37 +10,41 @@ pub fn HomePage<G: Html>(cx: Scope<'_>) -> View<G> {
 
     let about = move || {
         spawn_local_scoped(cx, async move {
-            let new_msg =
-                get_about().await;
+            let new_msg = get_about().await;
 
             match new_msg {
                 Ok(value) => about_msg.set(value),
-                Err(error) => error_msg.set(Option::Some(error.message))
+                Err(error) => error_msg.set(Option::Some(error.message)),
             };
         })
     };
     about();
     view! { cx,
-        div(class="container") {
+        div(class="container-fluid hero is-fullheight") {
             (
                 match (*error_msg.get()).clone() {
-                    Some(msg) => 
+                    Some(msg) =>
                         view!(cx ,
                             div(class="notification is-danger") {
                                 button(class="delete", on:click= |_| error_msg.set(Option::None))
                                 p { (msg) }
                             }
                         ),
-                    None => 
+                    None =>
                         view!(cx ,
                         ),
                 }
             )
             div(class="container") {
                 h1 (class="title is-2") { "Sobre a empresa"}
-                
+
                 section {
                     p { (about_msg.get()) }
+                }
+            }
+            div(class="mt-auto has-background-black has-text-centered") {
+                figure(class="image is-inline-block") {
+                    img(src="images/logo.png") {}
                 }
             }
         }

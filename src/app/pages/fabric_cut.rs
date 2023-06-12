@@ -100,7 +100,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
         },
     ];
 
-    let active_panel = create_signal(cx, 2);
+    let active_panel = create_signal(cx, 3);
     let cutting_table_list = create_signal(cx, cutting_tables);
     let selected_cutting_table = create_signal(cx, current_cutting_table);
     let fabric_list = create_signal(cx, fabrics);
@@ -117,8 +117,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     let length = create_signal(cx, 1800.0);
 
     let set_config_panel_active = |_| active_panel.set(1);
-    let set_pieces_panel_active = |_| active_panel.set(2);
-    let set_info_panel_active = |_| active_panel.set(3);
+    let set_info_panel_active = |_| active_panel.set(2);
+    let set_pieces_panel_active = |_| active_panel.set(3);
 
     let export_g_code = |_| {
         todo!();
@@ -133,10 +133,18 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     };
 
     view! { cx,
-        div(class="container") {
-            div(class="columns") {
-                div(class="column is-4") {
-                    "Teste"
+            div(class="columns mx-1") {
+                div(class="panel ml-2 mt-3", style="width:300px") {
+                    header(class="panel-heading has-background-grey-lighter") { "Disposição" }
+                    div(class="panel-block is-flex") {
+                        svg (width="300", height="625",style="border:1px solid #000000;") {
+                            rect(width="40", height="30", x="0", y="0", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
+                            rect(width="30", height="30", x="40", y="0", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
+                            rect(width="30", height="30", x="70", y="0", style="fill:rgb(255,0,0);stroke-width:1;stroke:rgb(0,0,0)") {}
+                            rect(width="30", height="30", x="0", y="30", style="fill:rgb(0,255,0);stroke-width:1;stroke:rgb(0,0,0)") {}
+                            rect(width="30", height="30", x="30", y="30", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
+                        }
+                    }
                 }
                 div(class="column") {
                     div(class="card") {
@@ -226,7 +234,50 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                             }
                         }
                     }
-                    div(class="card my-2") {
+                    div(class="card") {
+                        header(class="card-header has-background-grey-lighter") {
+                            p(class="card-header-title") {
+                                "Informações"
+                            }
+                            button(href="#collapsible-card-info", class="card-header-icon is-hidden-fullscreen", aria-label="more options", on:click=set_info_panel_active) {
+                                span(class="icon") {
+                                    i(class="fas fa-angle-down", aria-hidden="true") {}
+                                }
+                            }
+                        }
+                        div(id="collapsible-card-info", class=(match *active_panel.get() {2 => "",_ => "is-collapsible"})) {
+                            div(class="card-content columns  has-text-centered") {
+                                div(class="column is-2") {
+                                    label(class="label") { "Área total" }
+                                    p { (format!("{} m³", total_area)) }
+                                }
+                                div(class="column is-3") {
+                                    label(class="label") { "Área aproveitada" }
+                                    p { (format!("{} m³", used_area)) }
+                                }
+                                div(class="column is-3") {
+                                    label(class="label") { "Aproveitamento" }
+                                    p { (format!("{} %", percentage_use)) }
+                                }
+                                div(class="column is-4") {
+                                    label(class="label") { "Comprimento utiliz." }
+                                    p { (format!("{} mm", length)) }
+                                }
+                            }
+                            footer(class="card-footer") {
+                                button(class="card-footer-item button is-success m-2", on:click=export_g_code) {
+                                    "Gerar código G"
+                                }
+                                button(class="card-footer-item button is-link m-2", on:click=import_layout) {
+                                    "Importar disposição"
+                                }
+                                button(class="card-footer-item button is-warning m-2", on:click=export_layout) {
+                                    "Exportar disposição"
+                                }
+                            }
+                        }
+                    }
+                    div(class="card") {
                         header(class="card-header has-background-grey-lighter") {
                             p(class="card-header-title") {
                                 "Peças"
@@ -237,7 +288,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                 }
                             }
                         }
-                        div(id="collapsible-card-pieces", class=(match *active_panel.get() {2 => "", _ => "is-collapsible"})) {
+                        div(id="collapsible-card-pieces", class=(match *active_panel.get() {3 => "", _ => "is-collapsible"})) {
                             div(class="card-content") {
                                 table(class="table is-striped is-fullwidth") {
                                     thead {
@@ -271,51 +322,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                             }
                         }
                     }
-                    div(class="card") {
-                        header(class="card-header has-background-grey-lighter") {
-                            p(class="card-header-title") {
-                                "Informações"
-                            }
-                            button(href="#collapsible-card-info", class="card-header-icon is-hidden-fullscreen", aria-label="more options", on:click=set_info_panel_active) {
-                                span(class="icon") {
-                                    i(class="fas fa-angle-down", aria-hidden="true") {}
-                                }
-                            }
-                        }
-                        div(id="collapsible-card-info", class=(match *active_panel.get() {3 => "",_ => "is-collapsible"})) {
-                            div(class="card-content columns  has-text-centered") {
-                                div(class="column is-2") {
-                                    label(class="label") { "Área total" }
-                                    p { (format!("{} m³", total_area)) }
-                                }
-                                div(class="column is-3") {
-                                    label(class="label") { "Área aproveitada" }
-                                    p { (format!("{} m³", used_area)) }
-                                }
-                                div(class="column is-3") {
-                                    label(class="label") { "Aproveitamento" }
-                                    p { (format!("{} %", percentage_use)) }
-                                }
-                                div(class="column is-4") {
-                                    label(class="label") { "Comprimento utiliz." }
-                                    p { (format!("{} mm", length)) }
-                                }
-                            }
-                            footer(class="card-footer") {
-                                button(class="card-footer-item button is-success m-2", on:click=export_g_code) {
-                                    "Gerar código G"
-                                }
-                                button(class="card-footer-item button is-link m-2", on:click=import_layout) {
-                                    "Importar disposição"
-                                }
-                                button(class="card-footer-item button is-warning m-2", on:click=export_layout) {
-                                    "Exportar disposição"
-                                }
-                            }
-                        }
-                    }
+
                 }
-            }
         }
     }
 }

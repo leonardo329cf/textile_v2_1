@@ -24,11 +24,6 @@ pub fn App<G: Html>(cx: Scope) -> View<G> {
     view! { cx,
         header { AppNav {} }
         main { AppRouter {} }
-        footer(class="mt-auto has-background-black has-text-centered") {
-            figure(class="image is-inline-block") {
-                img(src="images/logo.png") {}
-            }
-        }
     }
 }
 
