@@ -1,14 +1,14 @@
+mod models;
 mod pages;
 mod services;
-mod models;
 
-use sycamore::prelude::*;
-use sycamore_router::{Router, Route, HistoryIntegration};
-use wasm_bindgen::prelude::*;
+use pages::fabric::{FabricItemPage, FabricListPage};
+use pages::fabric_cut::FabricCutPage;
 use pages::home::HomePage;
 use pages::not_found::NotFoundPage;
-
-use crate::app::pages::fabric::{FabricListPage, FabricItemPage};
+use sycamore::prelude::*;
+use sycamore_router::{HistoryIntegration, Route, Router};
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 extern "C" {
@@ -39,6 +39,7 @@ fn AppNav<G: Html>(cx: Scope) -> View<G> {
             div(id="navMenu", class="navbar-menu") {
                 div(class="navbar-start") {
                     a(class="navbar-item", href="/") { "Sobre" }
+                    a(class="navbar-item", href="/fabric-cut") { "Cortes" }
                     a(class="navbar-item", href="/fabric") { "Tecidos" }
                 }
             }
@@ -56,6 +57,7 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                     match route.get().as_ref() {
                         AppRoutes::Index => view! { cx, HomePage {} },
                         AppRoutes::NotFound => view! { cx, NotFoundPage {} },
+                        AppRoutes::FabricCut => view! { cx, FabricCutPage {} },
                         AppRoutes::FabricList => view! { cx, FabricListPage {} },
                         AppRoutes::FabricItem(id) => {
                             view! {cx, FabricItemPage(id = *id) {}}
@@ -73,6 +75,8 @@ enum AppRoutes {
     Index,
     #[not_found]
     NotFound,
+    #[to("/fabric-cut")]
+    FabricCut,
     #[to("/fabric")]
     FabricList,
     #[to("/fabric/<_>")]
