@@ -20,7 +20,7 @@ pub fn HomePage<G: Html>(cx: Scope<'_>) -> View<G> {
     };
     about();
     view! { cx,
-        div(class="container-fluid hero is-fullheight") {
+        div(class="container-fluid") {
             (
                 match (*error_msg.get()).clone() {
                     Some(msg) =>
@@ -35,16 +35,14 @@ pub fn HomePage<G: Html>(cx: Scope<'_>) -> View<G> {
                         ),
                 }
             )
-            div(class="container") {
-                h1 (class="title is-2") { "Sobre a empresa"}
-
-                section {
-                    p { (about_msg.get()) }
-                }
-            }
-            div(class="mt-auto has-background-black has-text-centered") {
+            div(class="has-text-centered") {
                 figure(class="image is-inline-block") {
                     img(src="images/logo.png") {}
+                }
+            }
+            div(class="container mt-4") {
+                section {
+                    p { (about_msg.get()) }
                 }
             }
         }
