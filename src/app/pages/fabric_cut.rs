@@ -1,13 +1,62 @@
+use crate::app::models::cutting_table::CuttingTable;
+use crate::app::models::fabric::Fabric;
 use crate::app::models::fabric_cut::FabricCutPiece;
 use sycamore::prelude::*;
 
-#[derive(Debug, Default, Clone)]
-pub struct AppState {
-    pub active_panel: RcSignal<i32>,
-}
-
 #[component]
 pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
+    let current_cutting_table = String::from("2");
+    let cutting_tables = vec![
+        CuttingTable {
+            id: 1,
+            name: String::from("Mesa A"),
+            width: 1800,
+            length: 2800,
+        },
+        CuttingTable {
+            id: 2,
+            name: String::from("Mesa B"),
+            width: 1500,
+            length: 3000,
+        },
+        CuttingTable {
+            id: 3,
+            name: String::from("Mesa C"),
+            width: 200,
+            length: 4000,
+        },
+    ];
+    let current_fabric = String::from("3");
+    let fabrics = vec![
+        Fabric {
+            id: 1,
+            name: String::from("Tecido 1"),
+            manufacturer: String::from("Fabricante 1"),
+            width: 1500,
+            code: String::from("xyz001"),
+        },
+        Fabric {
+            id: 2,
+            name: String::from("Tecido 2"),
+            manufacturer: String::from("Fabricante 1"),
+            width: 1800,
+            code: String::from("xyz002"),
+        },
+        Fabric {
+            id: 3,
+            name: String::from("Tecido 3"),
+            manufacturer: String::from("Fabricante 2"),
+            width: 1500,
+            code: String::from("wlw001"),
+        },
+        Fabric {
+            id: 4,
+            name: String::from("Tecido 4"),
+            manufacturer: String::from("Fabricante 2"),
+            width: 1800,
+            code: String::from("wlw002"),
+        },
+    ];
     let pieces = vec![
         FabricCutPiece {
             id: 1,
@@ -52,8 +101,10 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     ];
 
     let active_panel = create_signal(cx, 2);
-    let selected_cutting_table = create_signal(cx, 2.0);
-    let selected_fabric = create_signal(cx, 0.0);
+    let cutting_table_list = create_signal(cx, cutting_tables);
+    let selected_cutting_table = create_signal(cx, current_cutting_table);
+    let fabric_list = create_signal(cx, fabrics);
+    let selected_fabric = create_signal(cx, current_fabric);
     let defined_width = create_signal(cx, 0.0);
     let max_length = create_signal(cx, 0.0);
     let spacing = create_signal(cx, 0.0);
@@ -68,6 +119,18 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     let set_config_panel_active = |_| active_panel.set(1);
     let set_pieces_panel_active = |_| active_panel.set(2);
     let set_info_panel_active = |_| active_panel.set(3);
+
+    let export_g_code = |_| {
+        todo!();
+    };
+
+    let import_layout = |_| {
+        todo!();
+    };
+
+    let export_layout = |_| {
+        todo!();
+    };
 
     view! { cx,
         div(class="container") {
@@ -93,9 +156,15 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                     label(class="label") { "Mesa de corte"}
                                     div (class="control")  {
                                         div (class="select is-fullwidth") {
-                                            select(bind:valueAsNumber=selected_cutting_table) {
-                                                option { "Mesa média (1800mm x 5000mm)" }
-                                                option { "Mesa grande (2800mm x 7000mm)" }
+                                            select(bind:value=selected_cutting_table) {
+                                                Keyed(
+                                                    iterable=cutting_table_list,
+                                                    view=move |cx, item| view! { cx,
+                                                        FabricCutCuttingTableItem(table=item) {}
+                                                    },
+                                                    key=|item| item.id,
+                                                )
+
                                             }
                                         }
                                     }
@@ -104,9 +173,15 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                     label(class="label") { "Tecido"}
                                     div (class="control")  {
                                         div (class="select is-fullwidth") {
-                                            select(bind:valueAsNumber=selected_fabric) {
-                                                option { "Tecido azul (1800mm x 25000mm)" }
-                                                option { "Tecido negro (2800mm x 35000mm)" }
+                                            select(bind:value=selected_fabric) {
+                                                Keyed(
+                                                    iterable=fabric_list,
+                                                    view=move |cx, item| view! { cx,
+                                                        FabricCutFabricItem(fabric=item) {}
+                                                    },
+                                                    key=|item| item.id,
+                                                )
+
                                             }
                                         }
                                     }
@@ -227,13 +302,13 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                 }
                             }
                             footer(class="card-footer") {
-                                button(class="card-footer-item button is-success m-2") {
+                                button(class="card-footer-item button is-success m-2", on:click=export_g_code) {
                                     "Gerar código G"
                                 }
-                                button(class="card-footer-item button is-link m-2") {
+                                button(class="card-footer-item button is-link m-2", on:click=import_layout) {
                                     "Importar disposição"
                                 }
-                                button(class="card-footer-item button is-warning m-2") {
+                                button(class="card-footer-item button is-warning m-2", on:click=export_layout) {
                                     "Exportar disposição"
                                 }
                             }
@@ -242,6 +317,44 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                 }
             }
         }
+    }
+}
+
+#[derive(Props)]
+pub struct FabricCutCuttingTableItemProps {
+    table: CuttingTable,
+}
+
+#[component]
+pub fn FabricCutCuttingTableItem<G: Html>(
+    cx: Scope,
+    props: FabricCutCuttingTableItemProps,
+) -> View<G> {
+    let item = create_ref(cx, props.table);
+    let id = item.id;
+    let text = format!(
+        "{} ({}mm x {}mm)",
+        item.name,
+        item.width.clone(),
+        item.length.clone()
+    );
+    view! { cx,
+        option(value=id) { (text) }
+    }
+}
+
+#[derive(Props)]
+pub struct FabricCutFabricItemProps {
+    fabric: Fabric,
+}
+
+#[component]
+pub fn FabricCutFabricItem<G: Html>(cx: Scope, props: FabricCutFabricItemProps) -> View<G> {
+    let item = create_ref(cx, props.fabric);
+    let id = item.id;
+    let text = format!("{} ({}mm)", item.name, item.width.clone());
+    view! { cx,
+        option(value=id) { (text) }
     }
 }
 
