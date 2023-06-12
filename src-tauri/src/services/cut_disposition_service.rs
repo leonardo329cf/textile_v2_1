@@ -24,6 +24,18 @@ pub fn organize_pieces(cut_disposition_input: CutDispositionInput) {
 
     for rectangle in rectangles_list {
         possible_vertex_for_rectangle_list.sort_by(vertex_closest_to_top_and_left_comparator);
+
+        let mut fit = false;
+
+        for vertex in &possible_vertex_for_rectangle_list {
+
+            let subject = PositionedRectangle {
+                width: rectangle.width,
+                length: rectangle.length,
+                top_left_vertex: vertex.clone(),
+            };
+        }
+
     }
 }
 
@@ -100,6 +112,19 @@ pub fn vertex_closest_to_top_and_left_comparator(first: &Vertex, second: &Vertex
     } else {
         Ordering::Greater
     }
+}
+
+pub fn is_within_boundaries(
+    subject: &PositionedRectangle,
+    max_width: i32,
+    max_length: i32
+) -> bool {
+        let subject_vertices = subject.get_vertices();
+         
+        subject_vertices.bottom_rigth_vertex.pos_x <= max_width &&
+        subject_vertices.bottom_rigth_vertex.pos_y <= max_length &&
+        subject_vertices.top_left_vertex.pos_x >= 0 &&
+        subject_vertices.top_left_vertex.pos_y >= 0
 }
 
 
@@ -339,6 +364,113 @@ mod tests {
 
         // assert
         assert_eq!(vertex_list_ordered, vertex_list_unordered);
+    }
+
+    #[test]
+    fn is_within_boundaries_test() {
+        // input
+        let max_width = 5;
+        let max_length = 10;
+
+        let partially_outside_left = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: -1, 
+                    pos_y: 0 
+                }
+        };
         
+        let partially_outside_top = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 0, 
+                    pos_y: -1 
+                }
+        };
+
+        let partially_outside_rigth = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 4, 
+                    pos_y: 0 
+                }
+        };
+
+        let partially_outside_bottom = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 0, 
+                    pos_y: 9
+                }
+        };
+
+        
+        let partially_outside_rigth_bottom = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 4, 
+                    pos_y: 9 
+                }
+        };
+
+        
+        let inside = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 1, 
+                    pos_y: 4 
+                }
+        };
+
+        let inside_left_top_corner = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 0, 
+                    pos_y: 0 
+                }
+        };
+
+        let inside_rigth_bottom_corner = 
+        PositionedRectangle {
+            width: 2,
+            length: 2,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 3, 
+                    pos_y: 8 
+                }
+        };
+
+        // assert
+        assert!(!is_within_boundaries(&partially_outside_left, max_width, max_length));
+        assert!(!is_within_boundaries(&partially_outside_top, max_width, max_length));
+        assert!(!is_within_boundaries(&partially_outside_rigth, max_width, max_length));
+        assert!(!is_within_boundaries(&partially_outside_bottom, max_width, max_length));
+        assert!(!is_within_boundaries(&partially_outside_rigth_bottom, max_width, max_length));
+
+        assert!(is_within_boundaries(&inside, max_width, max_length));
+        assert!(is_within_boundaries(&inside_left_top_corner, max_width, max_length));
+        assert!(is_within_boundaries(&inside_rigth_bottom_corner, max_width, max_length));
     }
 }
