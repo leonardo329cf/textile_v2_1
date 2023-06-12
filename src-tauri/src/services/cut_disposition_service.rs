@@ -14,18 +14,20 @@ pub fn organize_pieces(cut_disposition_input: CutDispositionInput) {
     possible_vertex_for_rectangle_list.push(Vertex { pos_x: 0, pos_y: 0 });
 
     // creates vertices at the top left, bottom right and bottom left for prohibted areas
-    for prohibited_area in cut_disposition_input.prohibited_area_list {
-        possible_vertex_for_rectangle_list.append(&mut create_available_vertices_for_prohibited_area(prohibited_area, cut_disposition_input.spacing));
+    for prohibited_area in &cut_disposition_input.prohibited_area_list {
+        possible_vertex_for_rectangle_list.append(&mut create_available_vertices_for_prohibited_area(&prohibited_area, cut_disposition_input.spacing));
     }
 
     let mut rectangles_list = cut_disposition_input.rectangles_list;
 
     rectangles_list.sort_by(rectangle_wider_and_longer_comparator);
 
+    let mut positioned_rectangle = Vec::<PositionedRectangle>::new();
+
     for rectangle in rectangles_list {
         possible_vertex_for_rectangle_list.sort_by(vertex_closest_to_top_and_left_comparator);
 
-        let mut fit = false;
+        let mut fitted = false;
 
         for vertex in &possible_vertex_for_rectangle_list {
 
@@ -34,17 +36,42 @@ pub fn organize_pieces(cut_disposition_input: CutDispositionInput) {
                 length: rectangle.length,
                 top_left_vertex: vertex.clone(),
             };
-        }
 
+            if !is_within_boundaries(&subject, cut_disposition_input.defined_width, max_length) {
+                break;
+            }
+            let intersect: bool = 
+                positioned_rectangle
+                .iter()
+                .any(
+                    |rect| 
+                    intersect(&subject, rect, cut_disposition_input.spacing.unwrap_or(0))
+                )
+                ||
+                cut_disposition_input.prohibited_area_list
+                .iter()
+                .any(
+                    |rect| 
+                    intersect(&subject, rect, 0)
+                );
+            
+            if intersect {
+                break;
+            }
+
+            positioned_rectangle.push(subject);
+        }
     }
+
 }
 
+
 fn create_available_vertices_for_prohibited_area(
-    prohibited_area: PositionedRectangle,
+    prohibited_area: &PositionedRectangle,
     spacing: Option<i32>
 ) -> Vec<Vertex> {
         let mut vertex_list: Vec<Vertex> = Vec::<Vertex>::new();
-        vertex_list.append(&mut create_available_vertices_for_positioning(prohibited_area.clone(), spacing));
+        vertex_list.append(&mut create_available_vertices_for_positioning(prohibited_area, spacing));
         
         // add vertex in the same column of the prohibited, in the zero vertical position, this avoid wasting the space on top of the prohibited area
         vertex_list.push(
@@ -64,7 +91,7 @@ fn create_available_vertices_for_prohibited_area(
 }
 
 fn create_available_vertices_for_positioning(
-    positioned_rectangle: PositionedRectangle,
+    positioned_rectangle: &PositionedRectangle,
     spacing: Option<i32>
 ) -> Vec<Vertex> {
     let mut vertex_list: Vec<Vertex> = Vec::<Vertex>::new();
@@ -127,6 +154,26 @@ pub fn is_within_boundaries(
         subject_vertices.top_left_vertex.pos_y >= 0
 }
 
+pub fn intersect(
+    first: &PositionedRectangle,
+    second: &PositionedRectangle,
+    spacing: i32
+) -> bool {
+        let first_vertices = first.get_vertices();
+        let second_vertices = second.get_vertices();
+
+        // top side of the second rectangle is below bottom side of the first
+        second_vertices.top_left_vertex.pos_y < first_vertices.bottom_rigth_vertex.pos_y + spacing
+        &&
+        // rigth side of the second rectangle is at left of the left side of the first
+        second_vertices.bottom_rigth_vertex.pos_x + spacing > first_vertices.top_left_vertex.pos_x 
+        &&
+        // bottom side of the second rectangle is above top side of the first
+        second_vertices.bottom_rigth_vertex.pos_y + spacing > first_vertices.top_left_vertex.pos_y 
+        &&
+        // left side of the second rectangle is at rigth side of the first
+        second_vertices.top_left_vertex.pos_x < first_vertices.bottom_rigth_vertex.pos_x + spacing
+}
 
 #[cfg(test)]
 mod tests {
@@ -189,7 +236,7 @@ mod tests {
         ];
 
         // assert
-        assert_eq!(vertices, create_available_vertices_for_prohibited_area(prohibited_area, spacing));
+        assert_eq!(vertices, create_available_vertices_for_prohibited_area(&prohibited_area, spacing));
     }
 
 
@@ -239,7 +286,7 @@ mod tests {
         ];
 
         // assert
-        assert_eq!(vertices, create_available_vertices_for_positioning(positioned_rectangle, spacing));
+        assert_eq!(vertices, create_available_vertices_for_positioning(&positioned_rectangle, spacing));
     }
 
     #[test]
@@ -472,5 +519,443 @@ mod tests {
         assert!(is_within_boundaries(&inside, max_width, max_length));
         assert!(is_within_boundaries(&inside_left_top_corner, max_width, max_length));
         assert!(is_within_boundaries(&inside_rigth_bottom_corner, max_width, max_length));
+    }
+
+    #[test]
+    fn intersect_no_spacing_test() {
+        // input
+        let spacing = 0;
+
+        // intersect
+
+        // sides
+
+        let subject = 
+        PositionedRectangle {
+            width: 30,
+            length: 50,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 50 
+                }
+        };
+
+        let intersect_left = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 20, 
+                    pos_y: 50
+                }
+        };
+        
+        let intersect_top = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 30 
+                }
+        };
+
+        let intersect_rigth = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 50, 
+                    pos_y: 50 
+                }
+        };
+
+        let intersect_bottom = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 90
+                }
+        };
+
+        // inside
+
+        let intersect_inside_middle = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 35, 
+                    pos_y: 60
+                }
+        };
+
+        let intersect_inside_top_left = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 50
+                }
+        };
+
+        let intersect_inside_bottom_rigth = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 40, 
+                    pos_y: 70
+                }
+        };
+
+
+        // no intersect
+
+        // sides no touch
+
+        let left = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 0, 
+                    pos_y: 50
+                }
+        };
+
+        let top = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 10 
+                }
+        };
+
+        let rigth = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 70, 
+                    pos_y: 50 
+                }
+        };
+
+        let bottom = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 110
+                }
+        };
+        
+
+        // sides touch
+
+        let left_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 10, 
+                    pos_y: 50
+                }
+        };
+        
+        let top_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 20 
+                }
+        };
+
+        let rigth_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 60, 
+                    pos_y: 50 
+                }
+        };
+
+        let bottom_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 100
+                }
+        };
+
+        
+
+        // assertion
+        assert!(intersect(&subject, &intersect_left, spacing));
+        assert!(intersect(&subject, &intersect_top, spacing));
+        assert!(intersect(&subject, &intersect_rigth, spacing));
+        assert!(intersect(&subject, &intersect_bottom, spacing));
+
+        assert!(intersect(&subject, &intersect_inside_middle, spacing));
+        assert!(intersect(&subject, &intersect_inside_top_left, spacing));
+        assert!(intersect(&subject, &intersect_inside_bottom_rigth, spacing));
+        
+        assert!(!intersect(&subject, &left, spacing));
+        assert!(!intersect(&subject, &top, spacing));
+        assert!(!intersect(&subject, &rigth, spacing));
+        assert!(!intersect(&subject, &bottom, spacing));
+
+        assert!(!intersect(&subject, &left_touch, spacing));
+        assert!(!intersect(&subject, &top_touch, spacing));
+        assert!(!intersect(&subject, &rigth_touch, spacing));
+        assert!(!intersect(&subject, &bottom_touch, spacing));
+
+    }
+
+    #[test]
+    fn intersect_with_spacing_test() {
+        // input
+        let spacing = 5;
+
+        // intersect
+
+        // sides
+
+        let subject = 
+        PositionedRectangle {
+            width: 30,
+            length: 50,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 50 
+                }
+        };
+
+        let intersect_left = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 15, 
+                    pos_y: 50
+                }
+        };
+        
+        let intersect_top = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 25
+                }
+        };
+
+        let intersect_rigth = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 55, 
+                    pos_y: 50 
+                }
+        };
+
+        let intersect_bottom = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 95
+                }
+        };
+
+        // inside
+
+        let intersect_inside_middle = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 35, 
+                    pos_y: 60
+                }
+        };
+
+        let intersect_inside_top_left = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 25, 
+                    pos_y: 45
+                }
+        };
+
+        let intersect_inside_bottom_rigth = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 45, 
+                    pos_y: 75
+                }
+        };
+
+
+        // no intersect
+
+        // sides no touch
+
+        let left = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 0, 
+                    pos_y: 50
+                }
+        };
+
+        let top = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 10 
+                }
+        };
+
+        let rigth = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 70, 
+                    pos_y: 50 
+                }
+        };
+
+        let bottom = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 110
+                }
+        };
+        
+
+        // sides touch
+
+        let left_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 5, 
+                    pos_y: 50
+                }
+        };
+        
+        let top_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 15 
+                }
+        };
+
+        let rigth_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 65, 
+                    pos_y: 50 
+                }
+        };
+
+        let bottom_touch = 
+        PositionedRectangle {
+            width: 20,
+            length: 30,
+            top_left_vertex: 
+                Vertex { 
+                    pos_x: 30, 
+                    pos_y: 105
+                }
+        };
+
+        
+
+        // assertion
+        assert!(intersect(&subject, &intersect_left, spacing));
+        assert!(intersect(&subject, &intersect_top, spacing));
+        assert!(intersect(&subject, &intersect_rigth, spacing));
+        assert!(intersect(&subject, &intersect_bottom, spacing));
+
+        assert!(intersect(&subject, &intersect_inside_middle, spacing));
+        assert!(intersect(&subject, &intersect_inside_top_left, spacing));
+        assert!(intersect(&subject, &intersect_inside_bottom_rigth, spacing));
+        
+        assert!(!intersect(&subject, &left, spacing));
+        assert!(!intersect(&subject, &top, spacing));
+        assert!(!intersect(&subject, &rigth, spacing));
+        assert!(!intersect(&subject, &bottom, spacing));
+
+        assert!(!intersect(&subject, &left_touch, spacing));
+        assert!(!intersect(&subject, &top_touch, spacing));
+        assert!(!intersect(&subject, &rigth_touch, spacing));
+        assert!(!intersect(&subject, &bottom_touch, spacing));
+
     }
 }
