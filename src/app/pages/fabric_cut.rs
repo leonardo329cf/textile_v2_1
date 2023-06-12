@@ -52,6 +52,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     ];
 
     let active_panel = create_signal(cx, 2);
+    let selected_cutting_table = create_signal(cx, 2.0);
+    let selected_fabric = create_signal(cx, 0.0);
     let defined_width = create_signal(cx, 0.0);
     let max_length = create_signal(cx, 0.0);
     let spacing = create_signal(cx, 0.0);
@@ -87,27 +89,58 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                         }
                         div(id="collapsible-card-config", class=(match *active_panel.get() {1 => "",_ => "is-collapsible"})) {
                             div(class="card-content") {
-                                div(class="columns") {
-                                    div(class="column") {
-                                        label { "Largura definida (mm)"}
-                                        input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=defined_width) {}
+                                div(class="field") {
+                                    label(class="label") { "Mesa de corte"}
+                                    div (class="control")  {
+                                        div (class="select is-fullwidth") {
+                                            select(bind:valueAsNumber=selected_cutting_table) {
+                                                option { "Mesa média (1800mm x 5000mm)" }
+                                                option { "Mesa grande (2800mm x 7000mm)" }
+                                            }
+                                        }
                                     }
-                                    div(class="column") {
-                                        label { "Comprimento máximo (mm)"}
-                                        input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=max_length) {}
+                                }
+                                div(class="field") {
+                                    label(class="label") { "Tecido"}
+                                    div (class="control")  {
+                                        div (class="select is-fullwidth") {
+                                            select(bind:valueAsNumber=selected_fabric) {
+                                                option { "Tecido azul (1800mm x 25000mm)" }
+                                                option { "Tecido negro (2800mm x 35000mm)" }
+                                            }
+                                        }
                                     }
                                 }
                                 div(class="columns") {
-                                    div(class="column is-3") {
-                                        label { "Espaçamento(mm)" }
-                                        input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=spacing) {}
+                                    div(class="column field") {
+                                        label(class="label") { "Largura definida (mm)"}
+                                        div (class="control")  {
+                                            input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=defined_width) {}
+                                        }
                                     }
-                                    div(class="column is-5") {
-                                        label { "Comprimento definido (mm)"}
-                                        input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=defined_length) {}
+                                    div(class="column field") {
+                                        label(class="label") { "Comprimento máximo (mm)"}
+                                        div (class="control")  {
+                                            input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=max_length) {}
+                                        }
                                     }
-                                    div(class="column is-4") {
-                                        p(class="mt-5") {
+                                }
+                                div(class="columns") {
+                                    div(class="column is-3 field") {
+                                        label(class="label") { "Espaçamento(mm)" }
+                                        div (class="control")  {
+                                            input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=spacing) {}
+                                        }
+                                    }
+                                    div(class="column is-5 field") {
+                                        label(class="label") { "Comprimento definido (mm)"}
+                                        div (class="control")  {
+                                            input(class="input", type="number", placeholder="Number input", bind:valueAsNumber=defined_length) {}
+                                        }
+                                    }
+                                    div(class="column is-4 field") {
+                                        label(class="label") { "Opções"}
+                                        div(class="control") {
                                             label(class="checkbox mt-2") {
                                                 input(type="checkbox", bind:checked=is_right_align) {}
                                                 " Organizar a direita"
@@ -177,19 +210,19 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                         div(id="collapsible-card-info", class=(match *active_panel.get() {3 => "",_ => "is-collapsible"})) {
                             div(class="card-content columns  has-text-centered") {
                                 div(class="column is-2") {
-                                    label { "Área total" }
+                                    label(class="label") { "Área total" }
                                     p { (format!("{} m³", total_area)) }
                                 }
                                 div(class="column is-3") {
-                                    label { "Área aproveitada" }
+                                    label(class="label") { "Área aproveitada" }
                                     p { (format!("{} m³", used_area)) }
                                 }
                                 div(class="column is-3") {
-                                    label { "Aproveitamento" }
+                                    label(class="label") { "Aproveitamento" }
                                     p { (format!("{} %", percentage_use)) }
                                 }
                                 div(class="column is-4") {
-                                    label { "Comprimento utiliz." }
+                                    label(class="label") { "Comprimento utiliz." }
                                     p { (format!("{} mm", length)) }
                                 }
                             }
