@@ -87,7 +87,6 @@ pub struct Vertex {
     pub pos_y: i32,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -123,7 +122,7 @@ mod tests {
             top_left_vertex: top_left_vertex.clone(),
         };
 
-        // output
+        // expect
         let vertices = PositionedRectangleVertices {
             top_left_vertex,
             top_rigth_vertex: Vertex { 
