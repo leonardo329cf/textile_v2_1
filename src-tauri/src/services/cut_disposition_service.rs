@@ -2,76 +2,187 @@ use std::cmp::Ordering;
 
 use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle};
 
-pub fn organize_pieces(cut_disposition_input: CutDispositionInput) {
+struct MainRectangleOrganized{
+    pub possible_vertex_for_rectangle_list : Vec<Vertex>,
+    pub unused_rectangles_list: Vec<Rectangle>,
+    pub positioned_rectangles_list: Vec<PositionedRectangle>,
+    pub length_used: i32,
+}
+
+fn organize_main_rectangles(cut_disposition_input: &CutDispositionInput) -> MainRectangleOrganized {
     let max_length = match cut_disposition_input.defined_length {
         Some(defined_length) => defined_length,
         None => cut_disposition_input.max_length,
     };
 
+    let spacing = cut_disposition_input.spacing.unwrap_or(0);
+
+    let max_width = cut_disposition_input.defined_width;
+
+    let mut rectangles_list = cut_disposition_input.rectangles_list.clone();
+
+    let prohibited_area_list = cut_disposition_input.prohibited_area_list.clone();
+
     let mut possible_vertex_for_rectangle_list = Vec::<Vertex>::new();
+
+    let mut unused_rectangles_list = Vec::<Rectangle>::new();
+
+    let mut positioned_rectangles_list = Vec::<PositionedRectangle>::new();
 
     // Creates a vertex at the origin
     possible_vertex_for_rectangle_list.push(Vertex { pos_x: 0, pos_y: 0 });
 
     // creates vertices at the top left, bottom right and bottom left for prohibted areas
-    for prohibited_area in &cut_disposition_input.prohibited_area_list {
-        possible_vertex_for_rectangle_list.append(&mut create_available_vertices_for_prohibited_area(&prohibited_area, cut_disposition_input.spacing));
-    }
-
-    let mut rectangles_list = cut_disposition_input.rectangles_list;
+        
+    possible_vertex_for_rectangle_list.append(
+        &mut cut_disposition_input.prohibited_area_list.iter().fold(
+            Vec::<Vertex>::new(),
+            |mut list, prohibited_area| {
+                list.append(
+                    &mut create_available_vertices_for_prohibited_area(prohibited_area)
+                );
+                list
+            }
+        )
+    );
 
     rectangles_list.sort_by(rectangle_wider_and_longer_comparator);
-
-    let mut positioned_rectangle = Vec::<PositionedRectangle>::new();
-
+    
     for rectangle in rectangles_list {
         possible_vertex_for_rectangle_list.sort_by(vertex_closest_to_top_and_left_comparator);
 
-        let mut fitted = false;
+        let positioned_rectangle_option = find_position_for_rectangle(
+            &rectangle, 
+            max_width, 
+            max_length, 
+            spacing, 
+            &positioned_rectangles_list, 
+            &possible_vertex_for_rectangle_list, 
+            &prohibited_area_list
+        );
 
-        for vertex in &possible_vertex_for_rectangle_list {
+        match positioned_rectangle_option {
+            Some(positioned_rectangle) => {
+                positioned_rectangles_list.push(positioned_rectangle.clone());
+                if let Some(used_vertex_index) = get_vertex_index_in_list(
+                    &positioned_rectangle.top_left_vertex,
+                    &possible_vertex_for_rectangle_list
+                ) {
+                    possible_vertex_for_rectangle_list.remove(used_vertex_index);
+                }
+                possible_vertex_for_rectangle_list.append(&mut get_vertices_for_positioning(positioned_rectangle, spacing));
+            },
+            None => {
+                unused_rectangles_list.push(rectangle);
+            },
+        };
+    }
 
+    let length_used = 
+    match positioned_rectangles_list.iter().max_by(
+        |first, second| rectangle_maximum_y_comparator(first, second)
+    ) {
+        Some(rect) => rect.top_left_vertex.pos_y + rect.length,
+        None => 0,
+    };
+
+    MainRectangleOrganized {
+        possible_vertex_for_rectangle_list,
+        unused_rectangles_list,
+        positioned_rectangles_list,
+        length_used
+    }
+}
+
+fn get_vertex_index_in_list(vertex: &Vertex, possible_vertex_for_rectangle_list: &Vec<Vertex>) -> Option<usize> {
+    possible_vertex_for_rectangle_list
+    .iter()
+    .position(
+        |used_vertex| 
+        used_vertex.equals(vertex)
+    )
+}
+
+fn find_position_for_rectangle(
+    rectangle: &Rectangle,
+    max_width: i32, 
+    max_length: i32,
+    spacing: i32, 
+    positioned_rectangles_list: &[PositionedRectangle], 
+    possible_vertex_for_rectangle_list: &[Vertex],
+    prohibited_area_list: &[PositionedRectangle]
+) -> Option<PositionedRectangle> {
+    let positioned_rectangle_option = 
+    possible_vertex_for_rectangle_list
+    .iter()
+    .find_map(
+        |vertex| {
             let subject = PositionedRectangle {
                 width: rectangle.width,
                 length: rectangle.length,
                 top_left_vertex: vertex.clone(),
             };
-
-            if !is_within_boundaries(&subject, cut_disposition_input.defined_width, max_length) {
-                break;
-            }
-            let intersect: bool = 
-                positioned_rectangle
-                .iter()
-                .any(
-                    |rect| 
-                    intersect(&subject, rect, cut_disposition_input.spacing.unwrap_or(0))
-                )
-                ||
-                cut_disposition_input.prohibited_area_list
-                .iter()
-                .any(
-                    |rect| 
-                    intersect(&subject, rect, 0)
-                );
-            
-            if intersect {
-                break;
+    
+            if !is_within_boundaries(&subject, max_width, max_length) {
+                return Option::None;
             }
 
-            positioned_rectangle.push(subject);
+            if subject_intesect_with_positioned_rectangles_list(
+                &subject, 
+                positioned_rectangles_list, 
+                spacing
+            ) 
+            ||
+            subject_intesect_with_positioned_rectangles_list(
+                &subject, 
+                prohibited_area_list,
+                0
+                ) {
+                return Option::None;
+            }
+
+            Option::Some(subject)
         }
-    }
+    );
+    positioned_rectangle_option
+}
 
+fn get_vertices_for_positioning(positioned_rectangle: PositionedRectangle, spacing: i32) -> Vec<Vertex> {
+    let positioned_rectangle_vertices = positioned_rectangle.get_vertices();
+    let vertices_to_be_added = 
+        &mut vec![
+            Vertex { 
+                pos_x: positioned_rectangle_vertices.bottom_left_vertex.pos_x, 
+                pos_y:  positioned_rectangle_vertices.bottom_left_vertex.pos_y + spacing 
+            },
+            Vertex { 
+                pos_x: positioned_rectangle_vertices.top_rigth_vertex.pos_x + spacing, 
+                pos_y:  positioned_rectangle_vertices.top_rigth_vertex.pos_y 
+            },
+        ];
+    vertices_to_be_added.to_vec()
+}
+
+fn subject_intesect_with_positioned_rectangles_list(
+    subject: &PositionedRectangle,
+    positioned_rectangles_list: &[PositionedRectangle], 
+    spacing: i32
+) -> bool {
+    positioned_rectangles_list
+    .iter()
+    .any(
+        |rect| {
+            intersect(subject, rect, spacing)
+        }
+    )
 }
 
 
 fn create_available_vertices_for_prohibited_area(
     prohibited_area: &PositionedRectangle,
-    spacing: Option<i32>
 ) -> Vec<Vertex> {
         let mut vertex_list: Vec<Vertex> = Vec::<Vertex>::new();
-        vertex_list.append(&mut create_available_vertices_for_positioning(prohibited_area, spacing));
+        vertex_list.append(&mut create_available_vertices_for_positioning(prohibited_area, Option::None));
         
         // add vertex in the same column of the prohibited, in the zero vertical position, this avoid wasting the space on top of the prohibited area
         vertex_list.push(
@@ -121,7 +232,7 @@ fn create_available_vertices_for_positioning(
     vertex_list
 }
 
-pub fn rectangle_wider_and_longer_comparator(first: &Rectangle, second: &Rectangle) -> Ordering {
+fn rectangle_wider_and_longer_comparator(first: &Rectangle, second: &Rectangle) -> Ordering {
     if first.width < second.width || (first.width == second.width && first.length < second.length) {
         Ordering::Greater
     } else if first.width == second.width && first.length == second.length {
@@ -131,7 +242,7 @@ pub fn rectangle_wider_and_longer_comparator(first: &Rectangle, second: &Rectang
     }
 }
 
-pub fn vertex_closest_to_top_and_left_comparator(first: &Vertex, second: &Vertex) -> Ordering {
+fn vertex_closest_to_top_and_left_comparator(first: &Vertex, second: &Vertex) -> Ordering {
     if first.pos_y < second.pos_y || (first.pos_y == second.pos_y && first.pos_x < second.pos_x) {
         Ordering::Less
     } else if first.pos_y == second.pos_y && first.pos_x == second.pos_x {
@@ -141,7 +252,7 @@ pub fn vertex_closest_to_top_and_left_comparator(first: &Vertex, second: &Vertex
     }
 }
 
-pub fn is_within_boundaries(
+fn is_within_boundaries(
     subject: &PositionedRectangle,
     max_width: i32,
     max_length: i32
@@ -154,7 +265,7 @@ pub fn is_within_boundaries(
         subject_vertices.top_left_vertex.pos_y >= 0
 }
 
-pub fn intersect(
+fn intersect(
     first: &PositionedRectangle,
     second: &PositionedRectangle,
     spacing: i32
@@ -175,9 +286,78 @@ pub fn intersect(
         second_vertices.top_left_vertex.pos_x < first_vertices.bottom_rigth_vertex.pos_x + spacing
 }
 
+fn rectangle_maximum_y_comparator(first: &PositionedRectangle, second: &PositionedRectangle) -> Ordering {
+    (first.top_left_vertex.pos_y + first.length).cmp(&(second.top_left_vertex.pos_y + second.length))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn organize_main_rectangles_test() {
+
+        let prohibited_area = PositionedRectangle {
+            width: 160,
+            length: 60,
+            top_left_vertex:
+                Vertex { 
+                    pos_x: 0, 
+                    pos_y: 0 
+                }
+        };
+        let rect1 = Rectangle {
+            width: 120,
+            length: 40
+        };
+        let rect2 = Rectangle {
+            width: 40,
+            length: 70
+        };
+        let rect3 = Rectangle {
+            width: 20,
+            length: 40
+        };
+        let rect_no_fit = Rectangle {
+            width: 20,
+            length: 40
+        };
+
+        let cut_disposition_input = CutDispositionInput {
+            rectangles_list: vec![
+                rect1.clone(),
+                rect2.clone(),
+                rect3.clone(),
+                rect_no_fit.clone()
+            ],
+            prohibited_area_list: vec![
+                prohibited_area
+            ],
+            showcase: Option::None,
+            spacing: Option::Some(10),
+            max_length: 110,
+            defined_length: Option::None,
+            defined_width: 200
+        };
+
+        // action
+        let main_rectangle_organized = organize_main_rectangles(&cut_disposition_input);
+
+        // assertion
+        let p_rect1 = PositionedRectangle::new_from_rectangle_and_vertex(&rect1, &Vertex { pos_x: 0, pos_y: 60 });
+        let p_rect2 = PositionedRectangle::new_from_rectangle_and_vertex(&rect2, &Vertex { pos_x: 160, pos_y: 0 });
+        let p_rect3 = PositionedRectangle::new_from_rectangle_and_vertex(&rect3, &Vertex { pos_x: 130, pos_y: 60 });
+
+
+        assert!(main_rectangle_organized.unused_rectangles_list.iter().any(|item| item.equals(&rect_no_fit)));
+        assert!(main_rectangle_organized.positioned_rectangles_list.iter().any(|item| item.equals(&p_rect1)));
+        assert!(main_rectangle_organized.positioned_rectangles_list.iter().any(|item| item.equals(&p_rect2)));
+        assert!(main_rectangle_organized.positioned_rectangles_list.iter().any(|item| item.equals(&p_rect3)));
+
+        assert_eq!(100, main_rectangle_organized.length_used);
+
+    }
+
 
     /* 
     Assert that vertices are generated correctly
@@ -213,17 +393,15 @@ mod tests {
             top_left_vertex,
         };
 
-        let spacing = Some(3);
-
         // expect
         let vertices = vec![
             Vertex { 
-                pos_x: 9, 
+                pos_x: 6, 
                 pos_y: 3, 
             },
             Vertex { 
                 pos_x: 1, 
-                pos_y: 13, 
+                pos_y: 10, 
             },
             Vertex { 
                 pos_x: 1, 
@@ -236,7 +414,7 @@ mod tests {
         ];
 
         // assert
-        assert_eq!(vertices, create_available_vertices_for_prohibited_area(&prohibited_area, spacing));
+        assert_eq!(vertices, create_available_vertices_for_prohibited_area(&prohibited_area));
     }
 
 
@@ -620,7 +798,6 @@ mod tests {
                 }
         };
 
-
         // no intersect
 
         // sides no touch
@@ -716,8 +893,6 @@ mod tests {
                 }
         };
 
-        
-
         // assertion
         assert!(intersect(&subject, &intersect_left, spacing));
         assert!(intersect(&subject, &intersect_top, spacing));
@@ -727,7 +902,7 @@ mod tests {
         assert!(intersect(&subject, &intersect_inside_middle, spacing));
         assert!(intersect(&subject, &intersect_inside_top_left, spacing));
         assert!(intersect(&subject, &intersect_inside_bottom_rigth, spacing));
-        
+
         assert!(!intersect(&subject, &left, spacing));
         assert!(!intersect(&subject, &top, spacing));
         assert!(!intersect(&subject, &rigth, spacing));
@@ -737,7 +912,6 @@ mod tests {
         assert!(!intersect(&subject, &top_touch, spacing));
         assert!(!intersect(&subject, &rigth_touch, spacing));
         assert!(!intersect(&subject, &bottom_touch, spacing));
-
     }
 
     #[test]
@@ -934,8 +1108,6 @@ mod tests {
                     pos_y: 105
                 }
         };
-
-        
 
         // assertion
         assert!(intersect(&subject, &intersect_left, spacing));

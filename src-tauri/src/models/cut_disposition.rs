@@ -29,7 +29,7 @@ pub struct CutDispositionInput {
 pub struct CutDispositionOutput {
     pub vertical_line_list: Vec<Line>,
     pub horizontal_line_list: Vec<Line>,
-    pub rectangles_located_list: Vec<PositionedRectangle>,
+    pub positioned_rectangles_list: Vec<PositionedRectangle>,
     pub showcase_rectangles_located_list: Vec<PositionedRectangle>,
     pub unused_rectangles_list: Vec<PositionedRectangle>,
 }
@@ -38,6 +38,12 @@ pub struct CutDispositionOutput {
 pub struct Rectangle {
     pub width: i32,
     pub length: i32,
+}
+impl Rectangle {
+    pub fn equals(&self, rectangle: &Rectangle) -> bool {
+        self.width == rectangle.width &&
+        self.length == rectangle.length
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -48,6 +54,14 @@ pub struct PositionedRectangle {
 }
 
 impl PositionedRectangle {
+    pub fn new_from_rectangle_and_vertex(rectangle: &Rectangle, top_left_vertex: &Vertex) -> PositionedRectangle {
+        PositionedRectangle {
+            width: rectangle.width,
+            length: rectangle.length,
+            top_left_vertex: top_left_vertex.clone(),
+        }
+    }
+
     pub fn get_vertices(&self) -> PositionedRectangleVertices {
         PositionedRectangleVertices {
             top_left_vertex: self.top_left_vertex.clone(),
@@ -64,6 +78,12 @@ impl PositionedRectangle {
                 pos_y: self.top_left_vertex.pos_y + self.length, 
             },
         }
+    }
+
+    pub fn equals(&self, positioned_rectangle: &PositionedRectangle) -> bool {
+        self.width == positioned_rectangle.width &&
+        self.length == positioned_rectangle.length &&
+        self.top_left_vertex == positioned_rectangle.top_left_vertex
     }
 }
 
@@ -85,6 +105,13 @@ pub struct Line {
 pub struct Vertex {
     pub pos_x: i32,
     pub pos_y: i32,
+}
+
+impl Vertex {
+    pub fn equals(&self, vertex: &Vertex) -> bool {
+        self.pos_x == vertex.pos_x &&
+        self.pos_y == vertex.pos_y
+    }
 }
 
 #[cfg(test)]
