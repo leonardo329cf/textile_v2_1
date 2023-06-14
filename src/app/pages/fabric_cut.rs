@@ -1,6 +1,6 @@
 use crate::app::models::cutting_table::CuttingTable;
 use crate::app::models::fabric::Fabric;
-use crate::app::models::fabric_cut::FabricCutPiece;
+use crate::app::models::fabric_cut::{FabricCutPiece, PieceStatus, get_optional_pos_x, Vertex, get_optional_pos_y, PositionedRectangle};
 use sycamore::prelude::*;
 
 #[component]
@@ -60,43 +60,54 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     let pieces = vec![
         FabricCutPiece {
             id: 1,
-            length: 500,
-            width: 500,
-            pos_x: 1,
-            pos_y: 1,
-            status: 1,
+            width: 160,
+            length: 60,
+            status:
+                PieceStatus::ProhibitedArea { 
+                    position: Vertex {
+                        pos_x: 0, 
+                        pos_y: 0 
+                    }
+                }
         },
         FabricCutPiece {
             id: 2,
-            length: 1200,
-            width: 1800,
-            pos_x: 2,
-            pos_y: 2,
-            status: 1,
+            width: 120,
+            length: 40,
+            status: PieceStatus::Fit {
+                position: Vertex {
+                    pos_x: 0, 
+                    pos_y: 60
+                }
+            },
         },
         FabricCutPiece {
             id: 3,
-            length: 500,
-            width: 500,
-            pos_x: 3,
-            pos_y: 3,
-            status: 3,
+            width: 40,
+            length: 70,
+            status: PieceStatus::Fit {
+                position: Vertex {
+                    pos_x: 160, 
+                    pos_y: 0
+                }
+            },
         },
         FabricCutPiece {
             id: 4,
-            length: 500,
-            width: 500,
-            pos_x: 1500,
-            pos_y: 1500,
-            status: 4,
+            width: 20,
+            length: 40,
+            status: PieceStatus::Fit {
+                position: Vertex {
+                    pos_x: 130,
+                    pos_y: 60
+                }
+            },
         },
         FabricCutPiece {
             id: 5,
-            length: 1200,
-            width: 1800,
-            pos_x: 5,
-            pos_y: 5,
-            status: 1,
+            width: 20,
+            length: 40,
+            status: PieceStatus::DidNotFit
         },
     ];
 
@@ -115,6 +126,21 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     let used_area = create_signal(cx, 4.57);
     let percentage_use = create_signal(cx, 50.78);
     let length = create_signal(cx, 1800.0);
+
+    let fit_list_to_draw: &Signal<Vec<PositionedRectangle>> = create_signal(cx, Vec::new());
+    let prohibited_list_to_draw: &Signal<Vec<PositionedRectangle>> = create_signal(cx, Vec::new());
+    let showcase_list_to_draw: &Signal<Vec<PositionedRectangle>> = create_signal(cx, Vec::new());
+    create_effect(cx, move || {
+        let showcase_list: &Signal<Vec<PositionedRectangle>> = create_signal(cx, Vec::new());
+        let PiecesToDraw {
+            fit_list, 
+            prohibited_list, 
+            showcase_list 
+        } = separate_pieces(&piece_list.get());
+        fit_list_to_draw.set(fit_list);
+        prohibited_list_to_draw.set(prohibited_list);
+        showcase_list_to_draw.set(showcase_list);
+    });
 
     let set_config_panel_active = |_| active_panel.set(1);
     let set_info_panel_active = |_| active_panel.set(2);
@@ -137,12 +163,60 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                 div(class="panel ml-2 mt-3", style="width:300px") {
                     header(class="panel-heading has-background-grey-lighter") { "Disposição" }
                     div(class="panel-block is-flex") {
-                        svg (width="300", height="625",style="border:1px solid #000000;") {
-                            rect(width="40", height="30", x="0", y="0", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
-                            rect(width="30", height="30", x="40", y="0", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
-                            rect(width="30", height="30", x="70", y="0", style="fill:rgb(255,0,0);stroke-width:1;stroke:rgb(0,0,0)") {}
-                            rect(width="30", height="30", x="0", y="30", style="fill:rgb(0,255,0);stroke-width:1;stroke:rgb(0,0,0)") {}
-                            rect(width="30", height="30", x="30", y="30", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
+                        svg (
+                            xmlns="http://www.w3.org/2000/svg", 
+                            aria-label="Flickr", role="img", 
+                            viewBox=format!("0 0 {} {}", (defined_width.get().to_string()), (max_length.get().to_string())), 
+                            style="border:1px solid #000000;" ) {
+                            rect(
+                                width=(defined_width.get().to_string()), 
+                                height=(defined_length.get().to_string()), 
+                                x="0", 
+                                y="0", 
+                                style="fill:rgb(100,100,100);stroke-width:1;stroke:rgb(0,0,0)") {}
+                            Keyed(
+                                iterable=fit_list_to_draw,
+                                view=|cx, item| view! { cx,
+                                    svg () {
+                                        rect(
+                                            width=(item.width.to_string()), 
+                                            height=(item.length.to_string()), 
+                                            x=(item.pos_x.to_string()), 
+                                            y=(item.pos_y.to_string()), 
+                                            style="fill:rgb(0,255,0);stroke-width:1;stroke:rgb(0,0,0)") {}
+                                    }
+                                },
+                                key=|item| (item.id.to_string()),
+                            )
+                            Keyed(
+                                iterable=prohibited_list_to_draw,
+                                view=|cx, item| view! { cx,
+                                    svg () {
+                                        rect(
+                                            width=(item.width.to_string()), 
+                                            height=(item.length.to_string()), 
+                                            x=(item.pos_x.to_string()), 
+                                            y=(item.pos_y.to_string()), 
+                                            style="fill:rgb(0,0,0);stroke-width:1;stroke:rgb(0,0,0)") {}
+                                    }
+                                },
+                                key=|item| (item.id.to_string()),
+                            )
+                            Keyed(
+                                iterable=showcase_list_to_draw,
+                                view=|cx, item| view! { cx,
+                                    svg () {
+                                        rect(
+                                            width=(item.width.to_string()), 
+                                            height=(item.length.to_string()), 
+                                            x=(item.pos_x.to_string()), 
+                                            y=(item.pos_y.to_string()), 
+                                            style="fill:rgb(255,255,0);stroke-width:1;stroke:rgb(0,0,0)"
+                                        ) {}
+                                    }
+                                },
+                                key=|item| (item.id.to_string()),
+                            )
                         }
                     }
                 }
@@ -315,10 +389,10 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                 }
                             }
                             footer(class="card-footer m-4") {
-                                span(class="card-footer-item mx-1 has-text-white has-background-link") { "Couberam" }
+                                span(class="card-footer-item mx-1 has-text-white has-background-success") { "Couberam" }
                                 span(class="card-footer-item mx-1 has-text-white has-background-danger") { "Sobraram" }
                                 span(class="card-footer-item mx-1 has-background-warning") { "Mostruário" }
-                                span(class="card-footer-item mx-1 has-text-white has-background-success") { "Área proibida" }
+                                span(class="card-footer-item mx-1 has-text-white has-background-black") { "Área proibida" }
                             }
                         }
                     }
@@ -369,23 +443,95 @@ pub fn FabricCutFabricItem<G: Html>(cx: Scope, props: FabricCutFabricItemProps) 
 #[component(inline_props)]
 pub fn FabricCutPieceItem<G: Html>(cx: Scope, piece: FabricCutPiece) -> View<G> {
     let item = create_ref(cx, piece);
-    let status_class = match item.status {
-        1 => "has-text-white has-background-link",
-        2 => "has-text-white has-background-danger",
-        3 => "has-background-warning",
-        4 => "has-text-white has-background-success",
-        _ => "",
-    };
+    let status_class = get_piece_status_style(&item.status);
     view! { cx,
         tr(class=(status_class)) {
             td (style="vertical-align:middle;") { (item.id.clone()) }
             td (style="vertical-align:middle;") { (item.width.clone())  }
             td (style="vertical-align:middle;") { (item.length.clone()) }
-            td (style="vertical-align:middle;") { (item.pos_x.clone()) }
-            td (style="vertical-align:middle;") { (item.pos_y.clone()) }
+            td (style="vertical-align:middle;") { (get_optional_pos_x(item)) }
+            td (style="vertical-align:middle;") { (get_optional_pos_y(item)) }
             td (style="vertical-align:middle;") {
                 a(class="button is-responsive is-info", href=(format!("/fabric-cut/{}", item.id ))) { "Editar" }
             }
         }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq)]
+struct PiecesToDraw {
+    pub fit_list: Vec<PositionedRectangle>,
+    pub prohibited_list: Vec<PositionedRectangle>,
+    pub showcase_list: Vec<PositionedRectangle>,
+}
+
+fn separate_pieces(piece_list: &Vec<FabricCutPiece>) -> PiecesToDraw {
+    let mut fit_list: Vec<PositionedRectangle> = Vec::new();
+    let mut prohibited_list: Vec<PositionedRectangle> = Vec::new();
+    let mut showcase_list: Vec<PositionedRectangle> = Vec::new();
+    
+    piece_list.iter().for_each(
+        |item| {
+            let status = item.status.clone();
+            match status {
+                PieceStatus::Fit { position } => fit_list.push(
+                    PositionedRectangle { 
+                        id: item.id, 
+                        width: item.width, 
+                        length: item.length, 
+                        pos_x: position.pos_x,
+                        pos_y: position.pos_y 
+                    }
+                ),
+                PieceStatus::DidNotFit => (),
+                PieceStatus::ProhibitedArea { position } => prohibited_list.push(
+                    PositionedRectangle { 
+                        id: item.id, 
+                        width: item.width, 
+                        length: item.length, 
+                        pos_x: position.pos_x,
+                        pos_y: position.pos_y 
+                    }
+                ),
+                PieceStatus::Showcase { position_list } => position_list.iter().for_each(
+                    |position| {
+                        showcase_list.push(
+                            PositionedRectangle { 
+                                id: item.id, 
+                                width: item.width, 
+                                length: item.length, 
+                                pos_x: position.pos_x,
+                                pos_y: position.pos_y 
+                            }
+                        )
+                    }
+                )
+            }
+        }  
+    );
+
+    PiecesToDraw {
+        fit_list,
+        prohibited_list,
+        showcase_list,
+    }
+}
+
+#[component(inline_props)]
+pub fn DrawPieceItem<G: Html>(cx: Scope, piece: FabricCutPiece) -> View<G> {
+    let item = create_ref(cx, piece);
+    let status_class = get_piece_status_style(&item.status);
+
+    view! { cx,
+        rect(width="40", height="30", x="0", y="0", style="fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)") {}
+        }
+    }
+
+fn get_piece_status_style(status: &PieceStatus) -> &str{
+    match status {
+        PieceStatus::ProhibitedArea { position: _ } => "has-text-white has-background-black",
+        PieceStatus::DidNotFit => "has-text-white has-background-danger",
+        PieceStatus::Showcase { position_list: _ }=> "has-background-warning",
+        PieceStatus::Fit { position: _ } => "has-text-white has-background-success"
     }
 }
