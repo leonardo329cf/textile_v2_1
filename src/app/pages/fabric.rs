@@ -9,12 +9,12 @@ fn FabricItem<G: Html>(cx: Scope, fabric: Fabric) -> View<G> {
     let item = create_ref(cx, fabric);
     view! { cx,
         tr(class="p-7") {
-            td (style="vertical-align:middle;") { (item.id.clone()) }
-            td (style="vertical-align:middle;") { (item.name.clone())  }
-            td (style="vertical-align:middle;") { (item.manufacturer.clone()) }
-            td (style="vertical-align:middle;") { (item.width.clone()) }
-            td (style="vertical-align:middle;") { (item.code.clone()) }
-            td (style="vertical-align:middle;") {
+            td (style="width:5%; vertical-align:middle;") { (item.id.clone()) }
+            td (style="width:30%; vertical-align:middle;") { (item.name.clone())  }
+            td (style="width:30%; vertical-align:middle;") { (item.manufacturer.clone()) }
+            td (style="width:10%; vertical-align:middle;") { (item.width.clone()) }
+            td (style="width:15%; vertical-align:middle;") { (item.code.clone()) }
+            td (style="width:10%; vertical-align:middle;") {
                 a(class="button is-medium is-fullwidth is-success", href=(format!("/fabric/{}", item.id ))) { "Editar" }
             }
         }
