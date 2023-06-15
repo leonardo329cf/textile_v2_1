@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle, CutDispositionOutput};
+use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle, CutDispositionOutput, self};
 
 
 fn organized_disposition(cut_disposition_input: &CutDispositionInput) {
@@ -24,12 +24,30 @@ fn organized_disposition(cut_disposition_input: &CutDispositionInput) {
         positioned_rectangles_list, 
         length_used 
     } = organize_main_rectangles( 
-            max_length, 
-            spacing, 
-            max_width, 
-            &rectangles_list, 
-            &prohibited_area_list
-        );
+        max_length, 
+        spacing, 
+        max_width, 
+        &rectangles_list, 
+        &prohibited_area_list
+    );
+
+    let mut positioned_showcase_list = Vec::<PositionedRectangle>::new();
+    
+    if let Some(showcase) = &cut_disposition_input.showcase {
+        positioned_showcase_list.append(
+            &mut organize_showcase_rectangles(
+                showcase.clone(), 
+                spacing, 
+                max_width, 
+                &prohibited_area_list, 
+                &possible_vertex_for_rectangle_list, 
+                &positioned_rectangles_list,
+                length_used
+            )
+        )
+    }
+
+    
 }
 
 struct MainRectangleOrganized{
@@ -43,8 +61,8 @@ fn organize_main_rectangles(
     max_length: i32, 
     spacing: i32, 
     max_width: i32, 
-    rectangles_list: &Vec<Rectangle>, 
-    prohibited_area_list: &Vec<PositionedRectangle>
+    rectangles_list: &[Rectangle], 
+    prohibited_area_list: &[PositionedRectangle]
 ) -> MainRectangleOrganized {
     let mut possible_vertex_for_rectangle_list = Vec::<Vertex>::new();
 
@@ -69,7 +87,7 @@ fn organize_main_rectangles(
         )
     );
 
-    let mut rectangles_list_sorted = rectangles_list.clone();
+    let mut rectangles_list_sorted = Vec::from(rectangles_list);
 
     rectangles_list_sorted.sort_by(rectangle_wider_and_longer_comparator);
     
@@ -83,7 +101,7 @@ fn organize_main_rectangles(
             spacing, 
             &positioned_rectangles_list, 
             &possible_vertex_for_rectangle_list, 
-            &prohibited_area_list
+            prohibited_area_list
         );
 
         match positioned_rectangle_option {
@@ -98,7 +116,7 @@ fn organize_main_rectangles(
                 possible_vertex_for_rectangle_list.append(&mut get_vertices_for_positioning(positioned_rectangle, spacing));
             },
             None => {
-                unused_rectangles_list.push(rectangle);
+                unused_rectangles_list.push(rectangle.clone());
             },
         };
     }
@@ -117,6 +135,71 @@ fn organize_main_rectangles(
         positioned_rectangles_list,
         length_used
     }
+}
+
+fn organize_showcase_rectangles(
+    showcase: Rectangle,
+    spacing: i32, 
+    max_width: i32, 
+    prohibited_area_list: &[PositionedRectangle],
+    possible_vertex_for_rectangle_list: &[Vertex], 
+    positioned_rectangles_list: &[PositionedRectangle], 
+    length_used: i32
+) -> Vec<PositionedRectangle> {
+    let mut possible_vertex_for_rectangle_list_sorted: Vec<Vertex> = Vec::from(possible_vertex_for_rectangle_list);
+
+    possible_vertex_for_rectangle_list_sorted.sort_by(vertex_closest_to_top_and_left_comparator);
+
+    let mut positioned_showcase_list = Vec::<PositionedRectangle>::new();
+
+    while !&possible_vertex_for_rectangle_list_sorted.is_empty() {
+        possible_vertex_for_rectangle_list_sorted.sort_by(vertex_closest_to_top_and_left_comparator);
+
+        if let Some(vertex) = possible_vertex_for_rectangle_list_sorted.get(0) {
+            let subject = PositionedRectangle {
+                width: showcase.width,
+                length: showcase.length,
+                top_left_vertex: vertex.clone(),
+            };
+
+            if 
+            !is_within_boundaries(
+                &subject, 
+                max_width, 
+                length_used)
+            ||
+            subject_intesect_with_positioned_rectangles_list(
+                &subject, 
+                positioned_rectangles_list, 
+                spacing
+            ) 
+            ||
+            subject_intesect_with_positioned_rectangles_list(
+                &subject, 
+                prohibited_area_list,
+                0
+            ) 
+            ||
+            subject_intesect_with_positioned_rectangles_list(
+                &subject, 
+                &positioned_showcase_list, 
+                spacing
+            ) {
+                possible_vertex_for_rectangle_list_sorted.remove(0);
+                continue;
+            }
+
+            possible_vertex_for_rectangle_list_sorted.remove(0);
+            possible_vertex_for_rectangle_list_sorted.append(
+                &mut create_available_vertices_for_positioning(&subject, spacing)
+            );
+            positioned_showcase_list.push(subject);
+        } else {
+            break;
+        }
+    };
+
+    positioned_showcase_list
 }
 
 fn get_vertex_index_in_list(vertex: &Vertex, possible_vertex_for_rectangle_list: &Vec<Vertex>) -> Option<usize> {
@@ -148,11 +231,14 @@ fn find_position_for_rectangle(
                 top_left_vertex: vertex.clone(),
             };
     
-            if !is_within_boundaries(&subject, max_width, max_length) {
-                return Option::None;
-            }
-
-            if subject_intesect_with_positioned_rectangles_list(
+            if 
+            !is_within_boundaries(
+                &subject, 
+                max_width, 
+                max_length
+            )
+            ||
+            subject_intesect_with_positioned_rectangles_list(
                 &subject, 
                 positioned_rectangles_list, 
                 spacing
@@ -207,7 +293,7 @@ fn create_available_vertices_for_prohibited_area(
     prohibited_area: &PositionedRectangle,
 ) -> Vec<Vertex> {
         let mut vertex_list: Vec<Vertex> = Vec::<Vertex>::new();
-        vertex_list.append(&mut create_available_vertices_for_positioning(prohibited_area, Option::None));
+        vertex_list.append(&mut create_available_vertices_for_positioning(prohibited_area, 0));
         
         // add vertex in the same column of the prohibited, in the zero vertical position, this avoid wasting the space on top of the prohibited area
         vertex_list.push(
@@ -228,32 +314,24 @@ fn create_available_vertices_for_prohibited_area(
 
 fn create_available_vertices_for_positioning(
     positioned_rectangle: &PositionedRectangle,
-    spacing: Option<i32>
+    spacing: i32
 ) -> Vec<Vertex> {
     let mut vertex_list: Vec<Vertex> = Vec::<Vertex>::new();
     
     let PositionedRectangleVertices {top_rigth_vertex, bottom_left_vertex, ..} = positioned_rectangle.get_vertices();
 
-    match spacing {
-        Some(space) => {
-            vertex_list.push(
-                Vertex { 
-                    pos_x: top_rigth_vertex.pos_x + space, 
-                    pos_y: top_rigth_vertex.pos_y,
-                }
-            );
-            vertex_list.push(
-                Vertex { 
-                    pos_x: bottom_left_vertex.pos_x, 
-                    pos_y: bottom_left_vertex.pos_y + space,
-                }
-            );
-        },
-        None => {
-            vertex_list.push(top_rigth_vertex);
-            vertex_list.push(bottom_left_vertex);
-        },
-    }
+    vertex_list.push(
+        Vertex { 
+            pos_x: top_rigth_vertex.pos_x + spacing, 
+            pos_y: top_rigth_vertex.pos_y,
+        }
+    );
+    vertex_list.push(
+        Vertex { 
+            pos_x: bottom_left_vertex.pos_x, 
+            pos_y: bottom_left_vertex.pos_y + spacing,
+        }
+    );
     vertex_list
 }
 
@@ -478,7 +556,7 @@ mod tests {
             top_left_vertex,
         };
 
-        let spacing = Some(3);
+        let spacing = 3;
 
         // expect
         let vertices = vec![
