@@ -11,6 +11,7 @@
         "assert": "^2.0.0",
         "chromedriver": "^114.0.2",
         "geckodriver": "^4.0.4",
+        "run": "^1.4.0",
         "selenium-webdriver": "^4.10.0"
     },
     "devDependencies": {
