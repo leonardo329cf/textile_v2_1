@@ -87,6 +87,10 @@ fn organize_main_rectangles(
         )
     );
 
+    possible_vertex_for_rectangle_list.sort_by(vertex_closest_to_top_and_left_comparator);
+
+    possible_vertex_for_rectangle_list.dedup();
+
     let mut rectangles_list_sorted = Vec::from(rectangles_list);
 
     rectangles_list_sorted.sort_by(rectangle_wider_and_longer_comparator);
@@ -149,6 +153,8 @@ fn organize_showcase_rectangles(
     let mut possible_vertex_for_rectangle_list_sorted: Vec<Vertex> = Vec::from(possible_vertex_for_rectangle_list);
 
     possible_vertex_for_rectangle_list_sorted.sort_by(vertex_closest_to_top_and_left_comparator);
+
+    possible_vertex_for_rectangle_list_sorted.dedup();
 
     let mut positioned_showcase_list = Vec::<PositionedRectangle>::new();
 
@@ -230,7 +236,7 @@ fn find_position_for_rectangle(
                 length: rectangle.length,
                 top_left_vertex: vertex.clone(),
             };
-    
+
             if 
             !is_within_boundaries(
                 &subject, 
@@ -397,6 +403,35 @@ fn rectangle_maximum_y_comparator(first: &PositionedRectangle, second: &Position
 mod tests {
     use super::*;
 
+/*
+    Expected Result in html svg
+    <svg width="400" height="180">
+        <!-- fabric -->
+        <rect x="0" y="0" width="200" height="100" style="fill:grey;stroke:black;" />
+        
+        <!-- prohibited areas -->
+        <rect x="0" y="0" width="160" height="60" style="fill:black;stroke:black;" />
+        
+        <!-- positioned rectangles -->
+        <rect x="0" y="60" width="120" height="40" style="fill:green;stroke:black;" />
+        
+        <rect x="160" y="0" width="40" height="70" style="fill:green;stroke:black;" />
+        
+        <rect x="130" y="60" width="20" height="40" style="fill:green;stroke:black;" />
+        
+        <!-- Verticies generated -->  
+        <circle cx=0 cy=0 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=0 cy=0 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=0 cy=0 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=210 cy=0 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=160 cy=60 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=160 cy=80 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=0 cy=110 r="1" stroke="red" stroke-width="3" fill="red" />
+        <circle cx=130 cy=110 r="1" stroke="red" stroke-width="3" fill="red" />
+    
+    </svg>
+
+ */
     #[test]
     fn organize_main_rectangles_test() {
 
@@ -455,6 +490,14 @@ mod tests {
         let p_rect2 = PositionedRectangle::new_from_rectangle_and_vertex(&rect2, &Vertex { pos_x: 160, pos_y: 0 });
         let p_rect3 = PositionedRectangle::new_from_rectangle_and_vertex(&rect3, &Vertex { pos_x: 130, pos_y: 60 });
 
+        let possible_vertices = vec![
+            Vertex { pos_x :0, pos_y :0},
+            Vertex { pos_x :210, pos_y :0},
+            Vertex { pos_x :160, pos_y :60},
+            Vertex { pos_x :160, pos_y :80},
+            Vertex { pos_x :0, pos_y :110},
+            Vertex { pos_x :130, pos_y :110}
+        ];
 
         assert!(main_rectangle_organized.unused_rectangles_list.iter().any(|item| item.equals(&rect_no_fit)));
         assert!(main_rectangle_organized.positioned_rectangles_list.iter().any(|item| item.equals(&p_rect1)));
@@ -463,8 +506,110 @@ mod tests {
 
         assert_eq!(100, main_rectangle_organized.length_used);
 
+        assert_eq!(possible_vertices, main_rectangle_organized.possible_vertex_for_rectangle_list);
+
     }
 
+    #[test]
+    fn organize_showcase_test() {
+        let showcase = Rectangle {
+            width: 10,
+            length: 10
+        };
+
+        let positioned_rectangles_list = vec![
+            PositionedRectangle {
+                width: 120,
+                length: 40,
+                top_left_vertex: 
+                    Vertex { 
+                        pos_x: 0, 
+                        pos_y: 60 }
+            },
+            PositionedRectangle {
+                width: 40,
+                length: 70,
+                top_left_vertex: Vertex { 
+                    pos_x: 160, 
+                    pos_y: 0 
+                }
+            },
+            PositionedRectangle {
+                width: 20,
+                length: 40,
+                top_left_vertex: Vertex { 
+                    pos_x: 130, 
+                    pos_y: 60 
+                }
+            }
+        ];
+
+        let prohibited_area_list = vec![
+            PositionedRectangle {
+                width: 160,
+                length: 60,
+                top_left_vertex:
+                    Vertex { 
+                        pos_x: 0, 
+                        pos_y: 0 
+                    }
+            }
+        ];
+
+        let possible_vertices = vec![
+            Vertex { pos_x :0, pos_y :0},
+            Vertex { pos_x :0, pos_y :0},
+            Vertex { pos_x :0, pos_y :0},
+            Vertex { pos_x :210, pos_y :0},
+            Vertex { pos_x :160, pos_y :60},
+            Vertex { pos_x :160, pos_y :80},
+            Vertex { pos_x :0, pos_y :110},
+            Vertex { pos_x :130, pos_y :110}
+        ];
+
+        let spacing = 10;
+        let length_used = 100;
+        let max_width= 200;
+
+        
+
+        // action
+        let showcase_organized = organize_showcase_rectangles(
+            showcase, 
+            spacing, 
+            max_width, 
+            &prohibited_area_list, 
+            &possible_vertices, 
+            &positioned_rectangles_list, 
+            length_used
+        );
+
+        //assertion
+        let showcase_organized_expect = vec!{
+            PositionedRectangle {
+                width: 10,
+                length: 10,
+                top_left_vertex:
+                    Vertex {
+                        pos_x: 160,
+                        pos_y: 80
+                    }
+            },
+            PositionedRectangle {
+                width: 10,
+                length: 10,
+                top_left_vertex:
+                    Vertex {
+                        pos_x: 180,
+                        pos_y: 80
+                    }
+            }
+        };
+
+
+        assert_eq!(showcase_organized_expect, showcase_organized);
+
+    }
 
     /* 
     Assert that vertices are generated correctly
