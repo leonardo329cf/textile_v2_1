@@ -27,15 +27,15 @@ suite(function (env) {
       await driver.findElement(By.css(".field:nth-child(2) .input")).sendKeys("Fabricante")
       {
         const element = await driver.findElement(By.css(".modal-background"))
-        await driver.actions({ bridge: true }).moveToElement(element).clickAndHold().perform()
+        await driver.actions({ bridge: true }).move(element).press().perform()
       }
       {
         const element = await driver.findElement(By.css(".modal-background"))
-        await driver.actions({ bridge: true }).moveToElement(element).perform()
+        await driver.actions({ bridge: true }).move(element).perform()
       }
       {
         const element = await driver.findElement(By.css(".modal-background"))
-        await driver.actions({ bridge: true }).moveToElement(element).release().perform()
+        await driver.actions({ bridge: true }).move(element).release().perform()
       }
       await driver.findElement(By.css(".modal")).click()
       await driver.findElement(By.css(".field:nth-child(3) .input")).sendKeys("1800")
@@ -46,12 +46,6 @@ suite(function (env) {
       await driver.findElement(By.linkText("Cancelar")).click()
       await driver.findElement(By.linkText("Tecidos")).click()
       assert(await driver.findElement(By.linkText("Novo")).getText() == "Novo")
-      {
-        const element = await driver.findElement(By.linkText("Novo"))
-        const locator = `option[@value='${await element.getAttribute("value")}']`
-        const selectedText = await element.findElement(By.xpath(locator)).getText()
-        assert(selectedText == "Novo")
-      }
     })
   })
 }, { browsers: [Browser.CHROME, Browser.FIREFOX] });
