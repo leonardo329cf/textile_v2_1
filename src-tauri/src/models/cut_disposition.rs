@@ -27,11 +27,9 @@ pub struct CutDispositionInput {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct CutDispositionOutput {
-    pub vertical_line_list: Vec<Line>,
-    pub horizontal_line_list: Vec<Line>,
     pub positioned_rectangles_list: Vec<PositionedRectangle>,
     pub showcase_rectangles_located_list: Vec<PositionedRectangle>,
-    pub unused_rectangles_list: Vec<PositionedRectangle>,
+    pub unused_rectangles_list: Vec<Rectangle>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]

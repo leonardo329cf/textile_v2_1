@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle, CutDispositionOutput, self};
 
 
-fn organized_disposition(cut_disposition_input: &CutDispositionInput) {
+fn organized_disposition(cut_disposition_input: &CutDispositionInput) -> CutDispositionOutput {
     let max_length = match cut_disposition_input.defined_length {
         Some(defined_length) => defined_length,
         None => cut_disposition_input.max_length,
@@ -47,7 +47,11 @@ fn organized_disposition(cut_disposition_input: &CutDispositionInput) {
         )
     }
 
-    
+    CutDispositionOutput { 
+        positioned_rectangles_list, 
+        showcase_rectangles_located_list: positioned_showcase_list, 
+        unused_rectangles_list 
+    }
 }
 
 struct MainRectangleOrganized{
@@ -605,7 +609,6 @@ mod tests {
                     }
             }
         };
-
 
         assert_eq!(showcase_organized_expect, showcase_organized);
 
