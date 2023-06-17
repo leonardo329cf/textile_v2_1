@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle, CutDispositionOutput, self};
+use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle, CutDispositionOutput};
 
 
 fn organized_disposition(cut_disposition_input: &CutDispositionInput) -> CutDispositionOutput {
@@ -167,6 +167,7 @@ fn organize_showcase_rectangles(
 
         if let Some(vertex) = possible_vertex_for_rectangle_list_sorted.get(0) {
             let subject = PositionedRectangle {
+                id: showcase.id,
                 width: showcase.width,
                 length: showcase.length,
                 top_left_vertex: vertex.clone(),
@@ -236,6 +237,7 @@ fn find_position_for_rectangle(
     .find_map(
         |vertex| {
             let subject = PositionedRectangle {
+                id: rectangle.id,
                 width: rectangle.width,
                 length: rectangle.length,
                 top_left_vertex: vertex.clone(),
@@ -440,6 +442,7 @@ mod tests {
     fn organize_main_rectangles_test() {
 
         let prohibited_area = PositionedRectangle {
+            id: 1,
             width: 160,
             length: 60,
             top_left_vertex:
@@ -449,18 +452,22 @@ mod tests {
                 }
         };
         let rect1 = Rectangle {
+            id: 2,
             width: 120,
             length: 40
         };
         let rect2 = Rectangle {
+            id: 3,
             width: 40,
             length: 70
         };
         let rect3 = Rectangle {
+            id: 4,
             width: 20,
             length: 40
         };
         let rect_no_fit = Rectangle {
+            id: 5,
             width: 20,
             length: 40
         };
@@ -517,12 +524,14 @@ mod tests {
     #[test]
     fn organize_showcase_test() {
         let showcase = Rectangle {
+            id: 1,
             width: 10,
             length: 10
         };
 
         let positioned_rectangles_list = vec![
             PositionedRectangle {
+                id: 2,
                 width: 120,
                 length: 40,
                 top_left_vertex: 
@@ -531,6 +540,7 @@ mod tests {
                         pos_y: 60 }
             },
             PositionedRectangle {
+                id: 3,
                 width: 40,
                 length: 70,
                 top_left_vertex: Vertex { 
@@ -539,6 +549,7 @@ mod tests {
                 }
             },
             PositionedRectangle {
+                id: 4,
                 width: 20,
                 length: 40,
                 top_left_vertex: Vertex { 
@@ -550,6 +561,7 @@ mod tests {
 
         let prohibited_area_list = vec![
             PositionedRectangle {
+                id: 5,
                 width: 160,
                 length: 60,
                 top_left_vertex:
@@ -591,6 +603,7 @@ mod tests {
         //assertion
         let showcase_organized_expect = vec!{
             PositionedRectangle {
+                id: 1,
                 width: 10,
                 length: 10,
                 top_left_vertex:
@@ -600,6 +613,7 @@ mod tests {
                     }
             },
             PositionedRectangle {
+                id: 1,
                 width: 10,
                 length: 10,
                 top_left_vertex:
@@ -643,6 +657,7 @@ mod tests {
 
         let prohibited_area: PositionedRectangle = 
         PositionedRectangle { 
+            id: 1,
             width: 5, 
             length: 7, 
             top_left_vertex,
@@ -699,6 +714,7 @@ mod tests {
 
         let positioned_rectangle: PositionedRectangle = 
         PositionedRectangle { 
+            id: 1,
             width: 5, 
             length: 7, 
             top_left_vertex,
@@ -727,22 +743,27 @@ mod tests {
         // input
         let mut rectangle_list_unordered = vec![
             Rectangle {
+                id: 1,
                 width: 10,
                 length: 2
             },
             Rectangle {
+                id: 2,
                 width: 10,
                 length: 5
             },
             Rectangle {
+                id: 3,
                 width: 3,
                 length: 2
             },
             Rectangle {
+                id: 3,
                 width: 5,
                 length: 10
             },
             Rectangle {
+                id: 4,
                 width: 10,
                 length: 2
             }
@@ -751,22 +772,27 @@ mod tests {
         // expect
         let rectangle_list_ordered = vec![
             Rectangle {
+                id: 2,
                 width: 10,
                 length: 5
             },
             Rectangle {
+                id: 1,
                 width: 10,
                 length: 2
             },
             Rectangle {
+                id: 4,
                 width: 10,
                 length: 2
             },
             Rectangle {
+                id: 3,
                 width: 5,
                 length: 10
             },
             Rectangle {
+                id: 3,
                 width: 3,
                 length: 2
             }
@@ -854,6 +880,7 @@ mod tests {
 
         let partially_outside_left = 
         PositionedRectangle {
+            id: 1,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -865,6 +892,7 @@ mod tests {
         
         let partially_outside_top = 
         PositionedRectangle {
+            id: 2,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -876,6 +904,7 @@ mod tests {
 
         let partially_outside_rigth = 
         PositionedRectangle {
+            id: 3,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -887,6 +916,7 @@ mod tests {
 
         let partially_outside_bottom = 
         PositionedRectangle {
+            id: 4,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -899,6 +929,7 @@ mod tests {
         
         let partially_outside_rigth_bottom = 
         PositionedRectangle {
+            id: 5,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -911,6 +942,7 @@ mod tests {
         
         let inside = 
         PositionedRectangle {
+            id: 6,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -922,6 +954,7 @@ mod tests {
 
         let inside_left_top_corner = 
         PositionedRectangle {
+            id: 7,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -933,6 +966,7 @@ mod tests {
 
         let inside_rigth_bottom_corner = 
         PositionedRectangle {
+            id: 8,
             width: 2,
             length: 2,
             top_left_vertex: 
@@ -965,6 +999,7 @@ mod tests {
 
         let subject = 
         PositionedRectangle {
+            id: 1,
             width: 30,
             length: 50,
             top_left_vertex: 
@@ -976,6 +1011,7 @@ mod tests {
 
         let intersect_left = 
         PositionedRectangle {
+            id: 2,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -987,6 +1023,7 @@ mod tests {
         
         let intersect_top = 
         PositionedRectangle {
+            id: 3,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -998,6 +1035,7 @@ mod tests {
 
         let intersect_rigth = 
         PositionedRectangle {
+            id: 4,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1009,6 +1047,7 @@ mod tests {
 
         let intersect_bottom = 
         PositionedRectangle {
+            id: 5,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1022,6 +1061,7 @@ mod tests {
 
         let intersect_inside_middle = 
         PositionedRectangle {
+            id: 6,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1033,6 +1073,7 @@ mod tests {
 
         let intersect_inside_top_left = 
         PositionedRectangle {
+            id: 7,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1044,6 +1085,7 @@ mod tests {
 
         let intersect_inside_bottom_rigth = 
         PositionedRectangle {
+            id: 8,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1059,6 +1101,7 @@ mod tests {
 
         let left = 
         PositionedRectangle {
+            id: 9,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1070,6 +1113,7 @@ mod tests {
 
         let top = 
         PositionedRectangle {
+            id: 10,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1081,6 +1125,7 @@ mod tests {
 
         let rigth = 
         PositionedRectangle {
+            id: 11,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1092,6 +1137,7 @@ mod tests {
 
         let bottom = 
         PositionedRectangle {
+            id: 12,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1106,6 +1152,7 @@ mod tests {
 
         let left_touch = 
         PositionedRectangle {
+            id: 13,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1117,6 +1164,7 @@ mod tests {
         
         let top_touch = 
         PositionedRectangle {
+            id: 14,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1128,6 +1176,7 @@ mod tests {
 
         let rigth_touch = 
         PositionedRectangle {
+            id: 15,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1139,6 +1188,7 @@ mod tests {
 
         let bottom_touch = 
         PositionedRectangle {
+            id: 16,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1180,6 +1230,7 @@ mod tests {
 
         let subject = 
         PositionedRectangle {
+            id: 1,
             width: 30,
             length: 50,
             top_left_vertex: 
@@ -1191,6 +1242,7 @@ mod tests {
 
         let intersect_left = 
         PositionedRectangle {
+            id: 2,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1202,6 +1254,7 @@ mod tests {
         
         let intersect_top = 
         PositionedRectangle {
+            id: 3,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1213,6 +1266,7 @@ mod tests {
 
         let intersect_rigth = 
         PositionedRectangle {
+            id: 4,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1224,6 +1278,7 @@ mod tests {
 
         let intersect_bottom = 
         PositionedRectangle {
+            id: 5,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1237,6 +1292,7 @@ mod tests {
 
         let intersect_inside_middle = 
         PositionedRectangle {
+            id: 6,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1248,6 +1304,7 @@ mod tests {
 
         let intersect_inside_top_left = 
         PositionedRectangle {
+            id: 7,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1259,6 +1316,7 @@ mod tests {
 
         let intersect_inside_bottom_rigth = 
         PositionedRectangle {
+            id: 8,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1275,6 +1333,7 @@ mod tests {
 
         let left = 
         PositionedRectangle {
+            id: 9,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1286,6 +1345,7 @@ mod tests {
 
         let top = 
         PositionedRectangle {
+            id: 10,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1297,6 +1357,7 @@ mod tests {
 
         let rigth = 
         PositionedRectangle {
+            id: 11,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1308,6 +1369,7 @@ mod tests {
 
         let bottom = 
         PositionedRectangle {
+            id: 12,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1322,6 +1384,7 @@ mod tests {
 
         let left_touch = 
         PositionedRectangle {
+            id: 13,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1333,6 +1396,7 @@ mod tests {
         
         let top_touch = 
         PositionedRectangle {
+            id: 14,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1344,6 +1408,7 @@ mod tests {
 
         let rigth_touch = 
         PositionedRectangle {
+            id: 15,
             width: 20,
             length: 30,
             top_left_vertex: 
@@ -1355,6 +1420,7 @@ mod tests {
 
         let bottom_touch = 
         PositionedRectangle {
+            id: 16,
             width: 20,
             length: 30,
             top_left_vertex: 
