@@ -16,23 +16,15 @@ use serde::{Serialize, Deserialize};
 use super::app_error::AppError;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct ConfigInput {
-    rectangles_list: Vec<Rectangle>,
-    prohibited_area_list: Vec<PositionedRectangle>,
-    showcase: Option<Rectangle>,
-    last_id: u32
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct CutDispositionState {
     pub spacing: Option<i32>,
     pub max_length: i32,
     pub defined_length: Option<i32>,
     pub defined_width: i32,
-    rectangles_list: Vec<Rectangle>,
-    prohibited_area_list: Vec<PositionedRectangle>,
-    showcase: Option<Rectangle>,
-    last_id: u32
+    pub rectangles_list: Vec<Rectangle>,
+    pub prohibited_area_list: Vec<PositionedRectangle>,
+    pub showcase: Option<Rectangle>,
+    pub last_id: u32
 }
 impl CutDispositionState {
     pub fn new() -> CutDispositionState {
