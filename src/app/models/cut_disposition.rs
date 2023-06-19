@@ -27,6 +27,14 @@ pub struct CutDispositionInput {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct ConfigCutDispositionInput {
+    pub spacing: Option<i32>,
+    pub max_length: i32,
+    pub defined_length: Option<i32>,
+    pub defined_width: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Rectangle {
     pub id: u32,
     pub width: i32,

@@ -4,7 +4,7 @@ use std::clone;
 use serde_json::json;
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 
-use crate::app::{services::cut_disposition_service::{get_cut_disposition_input, ConfigCutDispositionInput, set_config_cut_disposition_input}, utils::utils::get_optional_from_boolean_and_value, log};
+use crate::app::{services::cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input}, utils::utils::get_optional_from_boolean_and_value, log, models::cut_disposition::ConfigCutDispositionInput};
 
 enum SelectedPanel {
     Config,
@@ -81,6 +81,41 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     };
 
     get_cut_disposition_input();
+
+    let get_config_cut_disposition_input = move || {
+        spawn_local_scoped(cx, async move {
+            let config_cut_disposition_result = get_config_cut_disposition_input().await;
+            match config_cut_disposition_result {
+                Ok(config_cut_disposition) => {
+                    defined_width.set(config_cut_disposition.defined_width as f64);
+                    max_length.set(config_cut_disposition.max_length as f64);
+
+                    match config_cut_disposition.spacing {
+                        Some(value) => {
+                            spacing.set(value as f64);
+                            spacing_selection.set(true)
+                        },
+                        None => {
+                            spacing.set(0.0);
+                            spacing_selection.set(false)
+                        },
+                    }
+
+                    match config_cut_disposition.defined_length {
+                        Some(value) => {
+                            defined_length.set(value as f64);
+                            defined_length_selection.set(true)
+                        },
+                        None => {
+                            defined_length.set(0.0);
+                            defined_length_selection.set(false)
+                        },
+                    }
+                },
+                Err(_error) => todo!(),
+            }
+        })
+    };
 
     view! { cx,
             div(class="columns mx-1") {
@@ -194,7 +229,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                 div(class="level") {
                                     div(class="level-item") {
                                         button(class="button is-success mr-5", on:click=move |_| save_config()) { "Salvar" }
-                                        button(class="button is-warning", on:click=move |_| get_cut_disposition_input()) { "Cancelar" }
+                                        button(class="button is-warning", on:click=move |_| get_config_cut_disposition_input()) { "Cancelar" }
                                     }
                                 }
                             }
