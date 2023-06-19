@@ -4,7 +4,10 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 mod db;
+use std::sync::{Arc, Mutex};
+
 use db::db_connection::DbConnection;
+use models::cut_disposition::CutDispositionState;
 
 use crate::controllers::about_controller::get_about;
 use controllers::fabric_controller::{get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric};
@@ -13,11 +16,18 @@ mod controllers;
 mod services;
 mod models;
 
+pub struct PiecesState {
+    pub pieces: Arc<Mutex<CutDispositionState>>
+}
+
 #[tokio::main]
 async fn main() -> Result<(), ()> {
     let db_connection = DbConnection::new().await.expect("Error initializing db");
     tauri::Builder::default()
         .manage(db_connection)
+        .manage(PiecesState {
+            pieces: Arc::new(Mutex::new(CutDispositionState::new()))
+        })
         .invoke_handler(tauri::generate_handler![
             get_about,
             get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric])

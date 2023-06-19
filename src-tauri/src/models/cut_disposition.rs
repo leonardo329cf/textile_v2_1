@@ -16,19 +16,35 @@ use serde::{Serialize, Deserialize};
 use super::app_error::AppError;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct PiecesListsInput {
+pub struct ConfigInput {
     rectangles_list: Vec<Rectangle>,
     prohibited_area_list: Vec<PositionedRectangle>,
     showcase: Option<Rectangle>,
     last_id: u32
 }
-impl PiecesListsInput {
-    pub fn new() -> PiecesListsInput {
-        PiecesListsInput {
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct CutDispositionState {
+    pub spacing: Option<i32>,
+    pub max_length: i32,
+    pub defined_length: Option<i32>,
+    pub defined_width: i32,
+    rectangles_list: Vec<Rectangle>,
+    prohibited_area_list: Vec<PositionedRectangle>,
+    showcase: Option<Rectangle>,
+    last_id: u32
+}
+impl CutDispositionState {
+    pub fn new() -> CutDispositionState {
+        CutDispositionState {
             rectangles_list: Vec::<Rectangle>::new(),
             prohibited_area_list: Vec::<PositionedRectangle>::new(),
             showcase: None,
-            last_id: 0
+            last_id: 0,
+            spacing: None,
+            max_length: 0,
+            defined_length: None,
+            defined_width: 0,
         }
     }
 
@@ -37,6 +53,10 @@ impl PiecesListsInput {
         self.prohibited_area_list = Vec::<PositionedRectangle>::new();
         self.showcase = None;
         self.last_id = 0;
+        self.spacing = None;
+        self.max_length = 0;
+        self.defined_length = None;
+        self.defined_width = 0;
     }
 
     fn generate_next_id(&mut self) -> u32 {
@@ -151,6 +171,18 @@ impl PiecesListsInput {
         self.remove_prohibited_area(prohibited_area.id)?;
         self.prohibited_area_list.push(prohibited_area.clone());
         Ok(prohibited_area)
+    }
+
+    pub fn get_cut_disposition_input(&self) -> CutDispositionInput {
+        CutDispositionInput {
+            rectangles_list: self.rectangles_list.clone(),
+            prohibited_area_list: self.prohibited_area_list.clone(),
+            showcase: self.showcase.clone(),
+            spacing: self.spacing,
+            max_length: self.max_length,
+            defined_length: self.defined_length,
+            defined_width: self.defined_width,
+        }
     }
 }
 
