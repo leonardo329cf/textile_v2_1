@@ -191,9 +191,10 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                         }
                                     }
                                 }
-                                div(class="columns") {
-                                    div(class="column field") {
-                                        button(class="button is-success", on:click=move |_| save_config()) { "Salvar" }
+                                div(class="level") {
+                                    div(class="level-item") {
+                                        button(class="button is-success mr-5", on:click=move |_| save_config()) { "Salvar" }
+                                        button(class="button is-warning", on:click=move |_| get_cut_disposition_input()) { "Cancelar" }
                                     }
                                 }
                             }
