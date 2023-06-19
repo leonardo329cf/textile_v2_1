@@ -44,6 +44,10 @@ impl PiecesListsInput {
         self.last_id
     }
 
+    pub fn get_pieces(&self) -> Vec<Rectangle> {
+        self.rectangles_list.clone()
+    }
+
     pub fn add_piece(&mut self, piece: &Rectangle) -> Rectangle {
         let piece_with_new_id = Rectangle {
             id: self.generate_next_id(),
@@ -71,6 +75,10 @@ impl PiecesListsInput {
         self.remove_piece(piece.id)?;
         self.rectangles_list.push(piece.clone());
         Ok(piece)
+    }
+
+    pub fn get_showcase(&self) -> Option<Rectangle> {
+        self.showcase.clone()
     }
 
     pub fn add_showcase(&mut self, showcase: &Rectangle) -> Rectangle{
@@ -109,6 +117,10 @@ impl PiecesListsInput {
         self.remove_showcase(showcase.id)?;
         self.showcase = Some(showcase.clone());
         Ok(showcase)
+    }
+
+    pub fn get_prohibited_area(&self) -> Vec<PositionedRectangle> {
+        self.prohibited_area_list.clone()
     }
 
     pub fn add_prohibited_area(&mut self, prohibited_area: &PositionedRectangle)  -> PositionedRectangle {
