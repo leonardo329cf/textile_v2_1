@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 use db::db_connection::DbConnection;
 use models::cut_disposition::CutDispositionState;
 
-use crate::controllers::{about_controller::get_about, cut_disposition_controller::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input}};
+use crate::controllers::{about_controller::get_about, cut_disposition_controller::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, create_piece}};
 use controllers::fabric_controller::{get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric};
 
 mod controllers;
@@ -31,7 +31,8 @@ async fn main() -> Result<(), ()> {
         .invoke_handler(tauri::generate_handler![
             get_about,
             get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric,
-            get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input])
+            get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input,
+            create_piece])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())

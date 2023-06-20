@@ -99,7 +99,7 @@ impl CutDispositionState {
             width: showcase.width,
             length: showcase.length,
         };
-        self.rectangles_list.push(showcase_with_new_id.clone());
+        self.showcase = Some(showcase_with_new_id.clone());
         showcase_with_new_id
     }
 
