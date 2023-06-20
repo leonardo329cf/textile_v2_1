@@ -133,7 +133,7 @@ pub async fn delete_cutting_table(id: i32) -> Result<CuttingTable, AppError> {
 
 #[derive(Serialize, Deserialize)]
 struct CuttingTableCreateArgs {
-    cuttingTable: CuttingTableCreate,
+    table: CuttingTableCreate,
 }
 
 pub async fn create_cutting_table(
@@ -142,7 +142,7 @@ pub async fn create_cutting_table(
     let value = invoke(
         "create_cutting_table",
         to_value(&CuttingTableCreateArgs {
-            cuttingTable: cutting_table,
+            table: cutting_table,
         })
         .unwrap(),
     )
@@ -182,14 +182,14 @@ pub async fn create_cutting_table(
 #[derive(Serialize, Deserialize)]
 
 struct CuttingTableUpdateArgs {
-    cuttingTable: CuttingTable,
+    table: CuttingTable,
 }
 
 pub async fn update_cutting_table(cutting_table: CuttingTable) -> Result<CuttingTable, AppError> {
     let value = invoke(
         "update_cutting_table",
         to_value(&CuttingTableUpdateArgs {
-            cuttingTable: cutting_table,
+            table: cutting_table,
         })
         .unwrap(),
     )

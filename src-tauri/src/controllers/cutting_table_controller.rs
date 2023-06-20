@@ -57,16 +57,16 @@ pub async fn delete_cutting_table(
 
 #[tauri::command]
 pub async fn create_cutting_table(
-    cutting_table: CuttingTableCreate,
+    table: CuttingTableCreate,
     db_state: State<'_, DbConnection>,
 ) -> Result<CuttingTable, AppError> {
-    cutting_table_service::create(cutting_table, &db_state.db).await
+    cutting_table_service::create(table, &db_state.db).await
 }
 
 #[tauri::command]
 pub async fn update_cutting_table(
-    cutting_table: CuttingTable,
+    table: CuttingTable,
     db_state: State<'_, DbConnection>,
 ) -> Result<CuttingTable, AppError> {
-    cutting_table_service::update(cutting_table, &db_state.db).await
+    cutting_table_service::update(table, &db_state.db).await
 }
