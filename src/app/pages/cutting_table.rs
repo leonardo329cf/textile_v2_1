@@ -69,9 +69,9 @@ pub fn CuttingTableListPage<G: Html>(cx: Scope<'_>) -> View<G> {
                     thead {
                         tr {
                             th(style="width:5%; vertical-align:middle;") { "ID" }
-                            th(style="width:30%; vertical-align:middle;") { "Nome" }
-                            th(style="width:10%; vertical-align:middle;") { "Largura (mm)" }
-                            th(style="width:15%; vertical-align:middle;") { "Comprimento (mm)" }
+                            th(style="width:50%; vertical-align:middle;") { "Nome" }
+                            th(style="width:15%; vertical-align:middle;") { "Largura (mm)" }
+                            th(style="width:20%; vertical-align:middle;") { "Comprimento (mm)" }
                             th(style="width:10%; vertical-align:middle;") {
                                 a(class="button is-medium is-success is-fullwidth", href="/cutting-table/0") { "Novo" }
                             }
