@@ -11,9 +11,21 @@ const CREATE_FABRIC_SCHEMA_SQL: &str =
     code VARCHAR(250)
 );";
 
+const CREATE_CUTTING_TABLE_SCHEMA_SQL: &str = 
+"CREATE TABLE IF NOT EXISTS cutting_table (
+    id INTEGER PRIMARY KEY NOT NULL, 
+    name VARCHAR(250) NOT NULL,
+    width INTEGER NOT NULL,
+    length INTEGER NOT NULL
+);";
+
 const DEV_POPULATE_FABRIC_SQL: &str = 
 "INSERT INTO fabric (name, manufacturer, width, code) Values('Tecido Normal', 'Fabricante 1', 4000, '23dfasdv4crgfd');
 INSERT INTO fabric (name, manufacturer, width, code) Values('Tecido Largo', 'Fabricante 1', 5000, 'sdasdasdasd876678');";
+
+const DEV_POPULATE_CUTTING_TABLE_SQL: &str = 
+"INSERT INTO cutting_table (name, width, length) Values('Mesa 1', 4000, 3000);
+INSERT INTO cutting_table (name, width, length) Values('Mesa 2', 5000, 4000);";
 
 pub struct DbConnection {
     pub db: Pool<Sqlite>,
@@ -39,6 +51,12 @@ async fn init_db() -> Pool<Sqlite> {
 
     if cfg!(dev) {
         execute_query(DEV_POPULATE_FABRIC_SQL, &db_pool).await;
+    }
+
+    execute_query(CREATE_CUTTING_TABLE_SCHEMA_SQL, &db_pool).await;
+
+    if cfg!(dev) {
+        execute_query(DEV_POPULATE_CUTTING_TABLE_SQL, &db_pool).await;
     }
 
     db_pool

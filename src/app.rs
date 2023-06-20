@@ -1,15 +1,19 @@
+mod models;
 mod pages;
 mod services;
-mod models;
 mod utils;
 
 use sycamore::prelude::*;
-use sycamore_router::{Router, Route, HistoryIntegration};
+use sycamore_router::{HistoryIntegration, Route, Router};
 use wasm_bindgen::prelude::*;
-use pages::home::HomePage;
-use pages::not_found::NotFoundPage;
 
-use crate::app::pages::{fabric::{FabricListPage, FabricItemPage}, fabric_cut::FabricCutPage};
+use pages::{
+    cutting_table::{CuttingTableItemPage, CuttingTableListPage},
+    fabric::{FabricItemPage, FabricListPage},
+    fabric_cut::FabricCutPage,
+    home::HomePage,
+    not_found::NotFoundPage,
+};
 
 #[wasm_bindgen]
 extern "C" {
@@ -41,6 +45,7 @@ fn AppNav<G: Html>(cx: Scope) -> View<G> {
                 div(class="navbar-start") {
                     a(class="navbar-item", href="/") { "Sobre" }
                     a(class="navbar-item", href="/fabric") { "Tecidos" }
+                    a(class="navbar-item", href="/cutting-table") { "Mesas de corte" }
                     a(class="navbar-item", href="/fabric-cut") { "Cortes" }
                 }
             }
@@ -62,6 +67,10 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                         AppRoutes::FabricItem(id) => {
                             view! {cx, FabricItemPage(id = *id) {}}
                         }
+                        AppRoutes::CuttingTableList => view! { cx, CuttingTableListPage {} },
+                        AppRoutes::CuttingTableItem(id) => {
+                            view! {cx, CuttingTableItemPage(id = *id) {}}
+                        }
                         AppRoutes::FabricCut => view! { cx, FabricCutPage {} },
                     }
                 )}
@@ -80,6 +89,10 @@ enum AppRoutes {
     FabricList,
     #[to("/fabric/<_>")]
     FabricItem(i32),
+    #[to("/cutting-table")]
+    CuttingTableList,
+    #[to("/cutting-table/<_>")]
+    CuttingTableItem(i32),
     #[to("/fabric-cut")]
     FabricCut,
 }
