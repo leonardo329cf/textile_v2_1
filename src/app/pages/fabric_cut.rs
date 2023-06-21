@@ -1,6 +1,6 @@
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 
-use crate::app::{services::cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, get_cut_disposition_output, self}, utils::utils::get_optional_from_boolean_and_value, log, models::cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle, CutDispositionOutput}};
+use crate::app::{services::{cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, get_cut_disposition_output, self}, cutting_table_service::get_all_cutting_table, fabric_service::get_all_fabric}, utils::utils::get_optional_from_boolean_and_value, log, models::{cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle, CutDispositionOutput}, cutting_table::CuttingTable, fabric::Fabric}};
 
 enum SelectedPanel {
     Config,
@@ -198,6 +198,82 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
         }
     }
 
+    let cutting_table_list: &Signal<Vec<CuttingTable>> =
+        create_signal(cx, Vec::<CuttingTable>::new());
+
+    let selected_cutting_table = create_signal(cx, String::from("0"));
+
+    let fetch_all_cutting_table = move || {
+        spawn_local_scoped(cx, async move {
+            let new_cutting_table_list = get_all_cutting_table().await;
+
+            match new_cutting_table_list {
+                Ok(value) => cutting_table_list.set(value),
+                Err(_error) => cutting_table_list.set(Vec::<CuttingTable>::new()),
+            };
+        })
+    };
+
+    fetch_all_cutting_table();
+
+    let fabric_list = create_signal(cx, Vec::<Fabric>::new());
+    let selected_fabric = create_signal(cx, String::from("0"));
+
+    let fetch_all_fabric = move || {
+        spawn_local_scoped(cx, async move {
+            let new_fabric_list =
+                get_all_fabric().await;
+
+            match new_fabric_list {
+                Ok(value) => fabric_list.set(value),
+                Err(_error) => fabric_list.set(Vec::<Fabric>::new())
+            };
+        })
+    };
+
+    fetch_all_fabric();
+
+    create_effect(cx, || {
+        config_error_message.set(None);
+        if *selected_cutting_table.get() == "0" {
+            selected_fabric.set(String::from("0"));
+            max_length.set(0.0);
+            defined_width.set(0.0);
+        } else {
+            defined_width.set(0.0);
+            
+            if let Some(table) = (*cutting_table_list.get())
+            .iter()
+            .find(|item| item.id.to_string() == *selected_cutting_table.get()) {
+                max_length.set(table.length as f64);
+            }
+            
+        }
+    });
+
+    create_effect(cx, || {
+        if *selected_fabric.get() != "0" {
+            config_error_message.set(None);
+            if let Some(fabric) = (*fabric_list.get())
+            .iter()
+            .find(|item| item.id.to_string() == *selected_fabric.get()) {
+                if let Some(table) = (*cutting_table_list.get())
+                .iter()
+                .find(|item| item.id.to_string() == *selected_cutting_table.get()) {
+                    if fabric.width <= table.width {
+                        defined_width.set(fabric.width as f64);
+                    } else {
+                        selected_fabric.set(String::from("0"));
+                        defined_width.set(0.0);
+                        config_error_message.set(Some("Largura do tecido deve ser menor ou igual a largura da mesa".to_string()))
+                    }
+                }
+                
+            }
+            
+        }
+    });
+
     view! { cx,
         div(class="columns mx-1") {
             div(class="panel ml-2 mt-3", style="width:300px") {
@@ -295,6 +371,42 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                     }
                     div(id="collapsible-card-config", class=(match *active_panel.get() {SelectedPanel::Config => "", _ => "is-hidden"})) {
                         div(class="card-content") {
+                            div(class="field") {
+                                label(class="label") { "Mesa de corte"}
+                                div (class="control")  {
+                                    div (class="select is-fullwidth") {
+                                        select(bind:value=selected_cutting_table) {
+                                            option(value="0") { "Não selecionado" }
+                                            Keyed(
+                                                iterable=cutting_table_list,
+                                                view=move |cx, item| view! { cx,
+                                                    FabricCutCuttingTableItem(table=item) {}
+                                                },
+                                                key=|item| item.id,
+                                            )
+
+                                        }
+                                    }
+                                }
+                            }
+                            div(class="field") {
+                                label(class="label") { "Tecido"}
+                                div (class="control")  {
+                                    div (class="select is-fullwidth") {
+                                        select(bind:value=selected_fabric, disabled=(*selected_cutting_table.get()) == "0" ) {
+                                            option(value="0") { "Não selecionado" }
+                                            Keyed(
+                                                iterable=fabric_list,
+                                                view=move |cx, item| view! { cx,
+                                                    FabricCutFabricItem(fabric=item) {}
+                                                },
+                                                key=|item| item.id,
+                                            )
+
+                                        }
+                                    }
+                                }
+                            }
                             div(class="columns") {
                                 div(class="column field") {
                                     label(class="label") { "Largura definida (mm)"}
@@ -306,7 +418,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                             bind:valueAsNumber=defined_width,
                                             step="1",
                                             pattern="/d+",
-                                            min="0"
+                                            min="0",
+                                            disabled=(*selected_cutting_table.get()) != "0" 
                                         ) {}
                                     }
                                 }
@@ -320,7 +433,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                             bind:valueAsNumber=max_length,
                                             step="1",
                                             pattern="/d+",
-                                            min="0"
+                                            min="0",
+                                            disabled=(*selected_cutting_table.get()) != "0" 
                                         ) {}
                                     }
                                 }
@@ -482,5 +596,43 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
 
             }
         }
+    }
+}
+
+#[derive(Props)]
+pub struct FabricCutCuttingTableItemProps {
+    table: CuttingTable,
+}
+
+#[component]
+pub fn FabricCutCuttingTableItem<G: Html>(
+    cx: Scope,
+    props: FabricCutCuttingTableItemProps,
+) -> View<G> {
+    let item = create_ref(cx, props.table);
+    let id = item.id;
+    let text = format!(
+        "{} ({}mm x {}mm)",
+        item.name,
+        item.width.clone(),
+        item.length.clone()
+    );
+    view! { cx,
+        option(value=id) { (text) }
+    }
+}
+
+#[derive(Props)]
+pub struct FabricCutFabricItemProps {
+    fabric: Fabric,
+}
+
+#[component]
+pub fn FabricCutFabricItem<G: Html>(cx: Scope, props: FabricCutFabricItemProps) -> View<G> {
+    let item = create_ref(cx, props.fabric);
+    let id = item.id;
+    let text = format!("{} ({}mm)", item.name, item.width.clone());
+    view! { cx,
+        option(value=id) { (text) }
     }
 }
