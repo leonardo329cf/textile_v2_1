@@ -11,7 +11,9 @@ use controllers::{
     about_controller::get_about,
     cut_disposition_controller::{
         get_config_cut_disposition_input, get_cut_disposition_input,
-        set_config_cut_disposition_input,
+        set_config_cut_disposition_input, create_piece, get_piece, 
+        get_showcase, get_prohibited_area, edit_piece, delete_piece, 
+        delete_showcase, delete_prohibited_area
     },
     cutting_table_controller::{
         create_cutting_table, delete_cutting_table, get_all_cutting_table, get_cutting_table,
@@ -38,20 +40,11 @@ async fn main() -> Result<(), ()> {
         })
         .invoke_handler(tauri::generate_handler![
             get_about,
-            get_fabric,
-            get_all_fabric,
-            delete_fabric,
-            create_fabric,
-            update_fabric,
-            get_cutting_table,
-            get_all_cutting_table,
-            delete_cutting_table,
-            create_cutting_table,
-            update_cutting_table,
-            get_cut_disposition_input,
-            set_config_cut_disposition_input,
-            get_config_cut_disposition_input
-        ])
+            get_fabric, get_all_fabric, delete_fabric, create_fabric, update_fabric,
+            get_cutting_table, get_all_cutting_table, delete_cutting_table, create_cutting_table, update_cutting_table,
+            get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input,
+            create_piece, get_piece, get_showcase, get_prohibited_area, edit_piece, 
+            delete_piece, delete_showcase, delete_prohibited_area])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())

@@ -13,8 +13,6 @@
 
 use serde::{Serialize, Deserialize};
 
-use super::app_error::AppError;
-
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct CutDispositionInput {
     pub rectangles_list: Vec<Rectangle>,

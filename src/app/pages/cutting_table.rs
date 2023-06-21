@@ -2,7 +2,6 @@ use sycamore::{component, futures::spawn_local_scoped, prelude::*};
 use sycamore_router::navigate;
 
 use crate::app::{
-    log,
     models::cutting_table::{CuttingTable, CuttingTableCreate},
     services::cutting_table_service::{
         create_cutting_table, delete_cutting_table, get_all_cutting_table, get_cutting_table_by_id,

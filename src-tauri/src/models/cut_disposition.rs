@@ -60,6 +60,14 @@ impl CutDispositionState {
         self.rectangles_list.clone()
     }
 
+    pub fn get_piece_by_id(&self, id: u32) -> Result<Rectangle, ()> {
+        let piece_option = self.rectangles_list.iter().find(|item| item.id == id);
+        match piece_option {
+            Some(piece) => Ok(piece.clone()),
+            None => Err(()),
+        }
+    }
+
     pub fn add_piece(&mut self, piece: &Rectangle) -> Rectangle {
         let piece_with_new_id = Rectangle {
             id: self.generate_next_id(),
@@ -99,7 +107,7 @@ impl CutDispositionState {
             width: showcase.width,
             length: showcase.length,
         };
-        self.rectangles_list.push(showcase_with_new_id.clone());
+        self.showcase = Some(showcase_with_new_id.clone());
         showcase_with_new_id
     }
 
@@ -133,6 +141,14 @@ impl CutDispositionState {
 
     pub fn get_prohibited_area(&self) -> Vec<PositionedRectangle> {
         self.prohibited_area_list.clone()
+    }
+
+    pub fn get_prohibited_area_by_id(&self, id: u32) -> Result<PositionedRectangle, ()> {
+        let piece_option = self.prohibited_area_list.iter().find(|item| item.id == id);
+        match piece_option {
+            Some(piece) => Ok(piece.clone()),
+            None => Err(()),
+        }
     }
 
     pub fn add_prohibited_area(&mut self, prohibited_area: &PositionedRectangle)  -> PositionedRectangle {

@@ -13,6 +13,7 @@ use pages::{
     fabric_cut::FabricCutPage,
     home::HomePage,
     not_found::NotFoundPage,
+    piece::{PieceItemPage, EditPieceItemPage}
 };
 
 #[wasm_bindgen]
@@ -66,12 +67,21 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                         AppRoutes::FabricList => view! { cx, FabricListPage {} },
                         AppRoutes::FabricItem(id) => {
                             view! {cx, FabricItemPage(id = *id) {}}
-                        }
+                        },
                         AppRoutes::CuttingTableList => view! { cx, CuttingTableListPage {} },
                         AppRoutes::CuttingTableItem(id) => {
                             view! {cx, CuttingTableItemPage(id = *id) {}}
-                        }
+                        },
                         AppRoutes::FabricCut => view! { cx, FabricCutPage {} },
+                        AppRoutes::PieceItem => {
+                            view! {cx, PieceItemPage {}}
+                        },
+                        AppRoutes::EditPieceItem(piece_type_id, id) => view! {
+                            cx, EditPieceItemPage(
+                                piece_type_id = *piece_type_id,
+                                id = *id
+                            ) {}
+                        }
                     }
                 )}
             }
@@ -95,4 +105,8 @@ enum AppRoutes {
     CuttingTableItem(i32),
     #[to("/fabric-cut")]
     FabricCut,
+    #[to("/piece-item")]
+    PieceItem,
+    #[to("/edit-piece-item/<_>/<_>")]
+    EditPieceItem(i32, u32),
 }
