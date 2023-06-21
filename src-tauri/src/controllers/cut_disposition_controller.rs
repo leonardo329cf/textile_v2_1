@@ -73,7 +73,7 @@ pub async fn get_piece(id: u32, state: State<'_, CutDispositionInputState>) -> R
         Ok(cut_disposition_state) => {
             let item = cut_disposition_state.get_piece_by_id(id);
             match item {
-                Ok(rectangle) => return Ok(rectangle),
+                Ok(rectangle) => Ok(rectangle),
                 Err(()) => Err(AppError::new(1, "Erro ao buscar Peça")),
             }
         }
@@ -100,7 +100,7 @@ pub async fn get_prohibited_area(id: u32, state: State<'_, CutDispositionInputSt
         Ok(cut_disposition_state) => {
             let item = cut_disposition_state.get_prohibited_area_by_id(id);
             match item {
-                Ok(rectangle) => return Ok(rectangle),
+                Ok(rectangle) => Ok(rectangle),
                 Err(()) => Err(AppError::new(1, "Erro ao buscar Área Proibida")),
             }
         }
@@ -127,5 +127,50 @@ pub async fn edit_piece(piece: RectangleType, state: State<'_, CutDispositionInp
             Ok(())
         },
         Err(_) => Err(AppError::new(1, "Erro ao editar peça")),
+    }
+}
+
+#[tauri::command]
+pub async fn delete_piece(id: u32, state: State<'_, CutDispositionInputState>) -> Result<(), AppError> {
+    let cut_disposition_state_result = state.cut_disposition_state.lock();
+    match cut_disposition_state_result {
+        Ok(mut cut_disposition_state) => {
+            let item = cut_disposition_state.remove_piece(id);
+            match item {
+                Ok(_rectangle) => Ok(()),
+                Err(_) => Err(AppError::new(1, "Erro ao remover Peça")),
+            }
+        }
+        Err(_) => Err(AppError::new(1, "Erro ao remover Peça")),
+    }
+}
+
+#[tauri::command]
+pub async fn delete_showcase(id: u32, state: State<'_, CutDispositionInputState>) -> Result<(), AppError> {
+    let cut_disposition_state_result = state.cut_disposition_state.lock();
+    match cut_disposition_state_result {
+        Ok(mut cut_disposition_state) => {
+            let item = cut_disposition_state.remove_showcase(id);
+            match item {
+                Ok(_rectangle) => Ok(()),
+                Err(_) => Err(AppError::new(1, "Erro ao remover Peça")),
+            }
+        }
+        Err(_) => Err(AppError::new(1, "Erro ao remover Mostruário")),
+    }
+}
+
+#[tauri::command]
+pub async fn delete_prohibited_area(id: u32, state: State<'_, CutDispositionInputState>) -> Result<(), AppError> {
+    let cut_disposition_state_result = state.cut_disposition_state.lock();
+    match cut_disposition_state_result {
+        Ok(mut cut_disposition_state) => {
+            let item = cut_disposition_state.remove_prohibited_area(id);
+            match item {
+                Ok(_rectangle) => Ok(()),
+                Err(_) => Err(AppError::new(1, "Erro ao remover Área Proibida")),
+            }
+        }
+        Err(_) => Err(AppError::new(1, "Erro ao remover Área Proibida")),
     }
 }

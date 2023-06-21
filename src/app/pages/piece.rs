@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 use sycamore_router::navigate;
 
-use crate::app::{models::{piece::RectangleType, cut_disposition::{Rectangle, PositionedRectangle, Vertex}, app_error::AppError}, services::cut_disposition_service::{create_piece, get_piece_by_id, get_showcase, get_prohibited_area_by_id, edit_piece}, log};
+use crate::app::{models::{piece::RectangleType, cut_disposition::{Rectangle, PositionedRectangle, Vertex}, app_error::AppError}, services::cut_disposition_service::{create_piece, get_piece_by_id, get_showcase, get_prohibited_area_by_id, edit_piece, remove_prohibited_area_by_id, remove_piece, remove_showcase}, log};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum PieceType {
@@ -240,7 +240,7 @@ pub struct EditPieceItemProps<> {
     id: u32,
 }
 
-
+#[component]
 pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> View<G> {
     let id = create_signal(cx, 0.0);
     let width = create_signal(cx, 0.0);
@@ -399,6 +399,40 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
         });
     };
 
+    let remove_item =  move |_| {
+        spawn_local_scoped(cx, async move {
+            let param_id = *id.get().as_ref() as u32;
+
+            log((*piece_type.get()).as_str());
+
+            let response = match (*piece_type.get()).as_str() {
+                "1" => {
+                    remove_piece(param_id).await
+                },
+                "2" => {
+                    remove_showcase(param_id).await
+                },
+                "3" => {
+                    remove_prohibited_area_by_id(param_id).await
+                },
+                _ => {
+                    Err(AppError {
+                        status:1,
+                        message: "Tipo de peça invalido".to_string(),
+                        timestamp: 1
+                    })
+                }
+            };
+
+            match response {
+                Ok(()) => {
+                    navigate("/fabric-cut")
+                },
+                Err(e) => error_message.set(e.message),
+            }
+        });
+    };
+
     view! { cx,
         div(class="modal is-active") {
             div(class="modal-background") {}
@@ -502,6 +536,9 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
                     div(class="level container") {
                         div(class="level-rigth") {
                             button(class="button is-medium is-success", on:click=save_item) { "Salvar" }
+                        }
+                        div(class="level-left") {
+                            button(class="button is-medium is-danger", on:click=remove_item) { "Remover" }
                         }
                     }
                 }

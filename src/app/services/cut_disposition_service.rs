@@ -133,7 +133,7 @@ struct CreatePieceArgs<> {
 pub async fn create_piece(piece: RectangleType) -> Result<(), AppError> {
     let value = invoke("create_piece", to_value(&CreatePieceArgs { piece }).unwrap()).await;
     match value {
-        Ok(ok_js_value) => {
+        Ok(_ok_js_value) => {
             Ok(())
         },
         Err(err_js_value) => {
@@ -277,7 +277,7 @@ pub async fn get_prohibited_area_by_id(id: u32) -> Result<PositionedRectangle, A
 pub async fn edit_piece(piece: RectangleType) -> Result<(), AppError> {
     let value = invoke("edit_piece", to_value(&CreatePieceArgs { piece }).unwrap()).await;
     match value {
-        Ok(ok_js_value) => {
+        Ok(_ok_js_value) => {
             Ok(())
         },
         Err(err_js_value) => {
@@ -290,6 +290,81 @@ pub async fn edit_piece(piece: RectangleType) -> Result<(), AppError> {
                         AppError {
                             status:1, 
                             message: "Falha ao configurar cortes".to_owned(), 
+                            timestamp: 1
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+pub async fn remove_piece(id: u32) -> Result<(), AppError> {
+    let value = invoke("delete_piece", to_value(&GetWithIdArgs { id }).unwrap()).await;
+    match value {
+        Ok(_ok_js_value) => {
+            Ok(())
+        },
+        Err(err_js_value) => {
+            let a = serde_wasm_bindgen::from_value::<AppError>(err_js_value);
+            match a {
+                Ok(a) => Err(a),
+                Err(error) => {
+                    log(error.to_string().as_str());
+                    Err(
+                        AppError {
+                            status:1, 
+                            message: "Falha ao remover Mostruário".to_owned(), 
+                            timestamp: 1
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+pub async fn remove_showcase(id: u32) -> Result<(), AppError> {
+    let value = invoke("delete_showcase", to_value(&GetWithIdArgs { id }).unwrap()).await;
+    match value {
+        Ok(_ok_js_value) => {
+            Ok(())
+        },
+        Err(err_js_value) => {
+            let a = serde_wasm_bindgen::from_value::<AppError>(err_js_value);
+            match a {
+                Ok(a) => Err(a),
+                Err(error) => {
+                    log(error.to_string().as_str());
+                    Err(
+                        AppError {
+                            status:1, 
+                            message: "Falha ao remover Mostruário".to_owned(), 
+                            timestamp: 1
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+pub async fn remove_prohibited_area_by_id(id: u32) -> Result<(), AppError> {
+    let value = invoke("delete_prohibited_area", to_value(&GetWithIdArgs { id }).unwrap()).await;
+    match value {
+        Ok(_ok_js_value) => {
+            Ok(())
+        },
+        Err(err_js_value) => {
+            let a = serde_wasm_bindgen::from_value::<AppError>(err_js_value);
+            match a {
+                Ok(a) => Err(a),
+                Err(error) => {
+                    log(error.to_string().as_str());
+                    Err(
+                        AppError {
+                            status:1, 
+                            message: "Falha ao remover Área Proibida".to_owned(), 
                             timestamp: 1
                         }
                     )

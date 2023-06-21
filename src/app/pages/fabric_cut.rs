@@ -1,7 +1,4 @@
 
-use std::clone;
-
-use serde_json::json;
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 
 use crate::app::{services::cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input}, utils::utils::get_optional_from_boolean_and_value, log, models::cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle}};
