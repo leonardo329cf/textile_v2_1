@@ -222,11 +222,19 @@ pub struct CutDispositionInput {
     pub defined_width: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CutDispositionOutput {
     pub positioned_rectangles_list: Vec<PositionedRectangle>,
     pub showcase_rectangles_located_list: Vec<PositionedRectangle>,
     pub unused_rectangles_list: Vec<Rectangle>,
+    pub prohibited_area_list: Vec<PositionedRectangle>,
+    pub length_used: i32,
+    pub total_area: i32,
+    pub used_area: i32,
+    pub usage: f64,
+    pub max_length: i32,
+    pub defined_length: Option<i32>,
+    pub defined_width: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -240,6 +248,10 @@ impl Rectangle {
         self.id == rectangle.id &&
         self.width == rectangle.width &&
         self.length == rectangle.length
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.width > 0 && self.length > 0
     }
 }
 
@@ -284,6 +296,14 @@ impl PositionedRectangle {
         self.width == positioned_rectangle.width &&
         self.length == positioned_rectangle.length &&
         self.top_left_vertex == positioned_rectangle.top_left_vertex
+    }
+    pub fn get_area(&self) -> i32 {
+        self.width * self.length
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.width > 0 && self.length > 0 && 
+        self.top_left_vertex.pos_x >= 0 && self.top_left_vertex.pos_y >= 0
     }
 }
 

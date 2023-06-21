@@ -22,6 +22,8 @@ use controllers::{
     fabric_controller::{create_fabric, delete_fabric, get_all_fabric, get_fabric, update_fabric},
 };
 
+use crate::controllers::cut_disposition_controller::organize_cut_disposition;
+
 mod controllers;
 mod models;
 mod services;
@@ -44,7 +46,8 @@ async fn main() -> Result<(), ()> {
             get_cutting_table, get_all_cutting_table, delete_cutting_table, create_cutting_table, update_cutting_table,
             get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input,
             create_piece, get_piece, get_showcase, get_prohibited_area, edit_piece, 
-            delete_piece, delete_showcase, delete_prohibited_area])
+            delete_piece, delete_showcase, delete_prohibited_area,
+            organize_cut_disposition])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())
