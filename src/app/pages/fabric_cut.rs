@@ -137,6 +137,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                     fit_list_to_draw.set(cut_disposition_output.positioned_rectangles_list);
                     showcase_list_to_draw.set(cut_disposition_output.showcase_rectangles_located_list);
                     prohibited_list_to_draw.set(cut_disposition_output.prohibited_area_list);
+                    unused_rectangles_list.set(cut_disposition_output.unused_rectangles_list);
                     length_used.set(cut_disposition_output.length_used as f64);
                     total_area.set(cut_disposition_output.total_area as f64);
                     used_area.set(cut_disposition_output.used_area as f64);
@@ -149,6 +150,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                     fit_list_to_draw.set(Vec::new());
                     showcase_list_to_draw.set(Vec::new());
                     prohibited_list_to_draw.set(Vec::new());
+                    unused_rectangles_list.set(Vec::new());
                     length_used.set(0.0);
                     total_area.set(0.0);
                     used_area.set(0.0);
@@ -184,6 +186,17 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
             }
         })
     };
+
+
+    fn get_row_piece_style(piece_id: u32, fit_list: &Vec<PositionedRectangle>, not_fit_list: &Vec<Rectangle>) -> String {
+        if fit_list.is_empty() && not_fit_list.is_empty() {
+            "".to_string()
+        } else if fit_list.iter().any(|item| item.id == piece_id) {
+            "has-text-white has-background-success".to_string()
+        } else {
+            "has-text-white has-background-danger".to_string()
+        }
+    }
 
     view! { cx,
         div(class="columns mx-1") {
@@ -426,7 +439,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                     Keyed(
                                         iterable=piece_list,
                                         view=move |cx, item| view! { cx,
-                                            tr(class="") {
+                                            tr(class=format!("{}", get_row_piece_style(item.id, &fit_list_to_draw.get(), &unused_rectangles_list.get()))) {
                                                 td (style="vertical-align:middle;") { (item.id.clone()) }
                                                 td (style="vertical-align:middle;") { (item.width.clone())  }
                                                 td (style="vertical-align:middle;") { (item.length.clone()) }
