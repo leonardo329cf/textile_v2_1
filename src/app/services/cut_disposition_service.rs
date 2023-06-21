@@ -273,3 +273,28 @@ pub async fn get_prohibited_area_by_id(id: u32) -> Result<PositionedRectangle, A
         }
     }
 }
+
+pub async fn edit_piece(piece: RectangleType) -> Result<(), AppError> {
+    let value = invoke("edit_piece", to_value(&CreatePieceArgs { piece }).unwrap()).await;
+    match value {
+        Ok(ok_js_value) => {
+            Ok(())
+        },
+        Err(err_js_value) => {
+            let a = serde_wasm_bindgen::from_value::<AppError>(err_js_value);
+            match a {
+                Ok(a) => Err(a),
+                Err(error) => {
+                    log(error.to_string().as_str());
+                    Err(
+                        AppError {
+                            status:1, 
+                            message: "Falha ao configurar cortes".to_owned(), 
+                            timestamp: 1
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

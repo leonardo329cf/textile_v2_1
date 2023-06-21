@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 use sycamore_router::navigate;
 
-use crate::app::{models::{piece::RectangleType, cut_disposition::{Rectangle, PositionedRectangle, Vertex}, app_error::AppError}, services::cut_disposition_service::{create_piece, get_piece_by_id, get_showcase, get_prohibited_area_by_id}, log};
+use crate::app::{models::{piece::RectangleType, cut_disposition::{Rectangle, PositionedRectangle, Vertex}, app_error::AppError}, services::cut_disposition_service::{create_piece, get_piece_by_id, get_showcase, get_prohibited_area_by_id, edit_piece}, log};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum PieceType {
@@ -316,6 +316,8 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
                             id.set(piece.id as f64);
                             width.set(piece.width as f64);
                             length.set(piece.length as f64);
+                            pos_x.set(piece.top_left_vertex.pos_x as f64);
+                            pos_y.set(piece.top_left_vertex.pos_y as f64);
                         },
                         Err(error) => {
                             error_message.set(error.message);
@@ -343,7 +345,7 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
 
             let response = match (*piece_type.get()).as_str() {
                 "1" => {
-                    create_piece(
+                    edit_piece(
                         RectangleType::Piece(
                             Rectangle {
                                 id: param_id,
@@ -354,7 +356,7 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
                     ).await
                 },
                 "2" => {
-                    create_piece(
+                    edit_piece(
                         RectangleType::Showcase(
                             Rectangle {
                                 id: param_id,
@@ -365,7 +367,7 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
                     ).await
                 },
                 "3" => {
-                    create_piece(
+                    edit_piece(
                         RectangleType::ProhibitedArea(
                             PositionedRectangle {
                                 id: param_id,

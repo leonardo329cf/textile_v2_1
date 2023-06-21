@@ -107,3 +107,25 @@ pub async fn get_prohibited_area(id: u32, state: State<'_, CutDispositionInputSt
         Err(_) => Err(AppError::new(1, "Erro ao buscar Área Proibida")),
     }
 }
+
+#[tauri::command]
+pub async fn edit_piece(piece: RectangleType, state: State<'_, CutDispositionInputState>) -> Result<(), AppError> {
+    let cut_disposition_state_result = state.cut_disposition_state.lock();
+    match cut_disposition_state_result {
+        Ok(mut cut_disposition_state) => {
+            match piece {
+                RectangleType::Piece(main_piece) => {
+                    cut_disposition_state.edit_piece(main_piece)?;
+                },
+                RectangleType::Showcase(showcase) => {
+                    cut_disposition_state.edit_showcase(showcase)?;
+                },
+                RectangleType::ProhibitedArea(prohibited_area) => {
+                    cut_disposition_state.edit_prohibited_area(prohibited_area)?;
+                },
+            };
+            Ok(())
+        },
+        Err(_) => Err(AppError::new(1, "Erro ao editar peça")),
+    }
+}
