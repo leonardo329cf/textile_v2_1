@@ -9,7 +9,7 @@ use wasm_bindgen::prelude::*;
 use pages::home::HomePage;
 use pages::not_found::NotFoundPage;
 
-use crate::app::pages::{fabric::{FabricListPage, FabricItemPage}, fabric_cut::FabricCutPage, piece::PieceItemPage};
+use crate::app::pages::{fabric::{FabricListPage, FabricItemPage}, fabric_cut::FabricCutPage, piece::{PieceItemPage, EditPieceItemPage}};
 
 #[wasm_bindgen]
 extern "C" {
@@ -65,6 +65,12 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                         AppRoutes::FabricCut => view! { cx, FabricCutPage {} },
                         AppRoutes::PieceItem => {
                             view! {cx, PieceItemPage {}}
+                        },
+                        AppRoutes::EditPieceItem(piece_type_id, id) => view! {
+                            cx, EditPieceItemPage(
+                                piece_type_id = *piece_type_id,
+                                id = *id
+                            ) {}
                         }
                     }
                 )}
@@ -87,4 +93,6 @@ enum AppRoutes {
     FabricCut,
     #[to("/piece-item")]
     PieceItem,
+    #[to("/edit-piece-item/<_>/<_>")]
+    EditPieceItem(i32, u32),
 }

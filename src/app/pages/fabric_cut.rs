@@ -277,7 +277,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                                 td (style="vertical-align:middle;") {  }
                                                 td (style="vertical-align:middle;") {  }
                                                 td (style="vertical-align:middle;") {
-                                                    a(class="button is-responsive is-info", href=(format!("/piece-edit/{}", some_showcase.id ))) { "Editar" }
+                                                    a(class="button is-responsive is-info", href=(format!("/edit-piece-item/2/{}", some_showcase.id ))) { "Editar" }
                                                 }
                                             }
                                         )
@@ -295,7 +295,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                                 td (style="vertical-align:middle;") {  }
                                                 td (style="vertical-align:middle;") {  }
                                                 td (style="vertical-align:middle;") {
-                                                    a(class="button is-responsive is-info", href=(format!("/piece-edit/{}", item.id ))) { "Editar" }
+                                                    a(class="button is-responsive is-info", href=(format!("/edit-piece-item/1/{}", item.id ))) { "Editar" }
                                                 }
                                             }
                                         },
@@ -311,7 +311,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                                 td (style="vertical-align:middle;") { (item.top_left_vertex.pos_x.clone()) }
                                                 td (style="vertical-align:middle;") { (item.top_left_vertex.pos_y.clone()) }
                                                 td (style="vertical-align:middle;") {
-                                                    a(class="button is-responsive is-info", href=(format!("/piece-edit/{}", item.id ))) { "Editar" }
+                                                    a(class="button is-responsive is-info", href=(format!("/edit-piece-item/3/{}", item.id ))) { "Editar" }
                                                 }
                                             }
                                         },
