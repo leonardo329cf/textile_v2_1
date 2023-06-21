@@ -1,5 +1,8 @@
+use std::time::Duration;
+
 use serde::{Serialize, Deserialize};
 use tauri::State;
+use tokio::time::sleep;
 
 use crate::{models::{cut_disposition::{CutDispositionInput, Rectangle, ConfigCutDispositionInput, PositionedRectangle, CutDispositionOutput}, app_error::AppError}, CutDispositionInputState, services::cut_disposition_service::organize_disposition};
 
@@ -209,6 +212,8 @@ pub async fn delete_prohibited_area(id: u32, state: State<'_, CutDispositionInpu
 
 #[tauri::command]
 pub async fn organize_cut_disposition(state: State<'_, CutDispositionInputState>) -> Result<CutDispositionOutput, AppError> {
+    // Wait for a milisec because it was returning before the table was updated
+    sleep(Duration::from_millis(1)).await;
     let state_result = state.cut_disposition_state.lock();
     match state_result {
         Ok(cut_disposition_state) => {

@@ -52,28 +52,6 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
 
     let draw_error_message = create_signal(cx, Option::<String>::None);
 
-    let save_config = 
-    move || {
-        spawn_local_scoped(cx, async move {
-            let config = ConfigCutDispositionInput {
-                spacing: get_optional_from_boolean_and_value(*spacing_selection.get(), *spacing.get() as i32),
-                max_length: *max_length.get() as i32,
-                defined_length: get_optional_from_boolean_and_value(*defined_length_selection.get(), *defined_length.get() as i32),
-                defined_width: *defined_width.get() as i32,
-            };
-            let response = set_config_cut_disposition_input(config).await;
-            match response {
-                Ok(_) => {
-                    config_error_message.set(None);
-                    get_cut_disposition_output();
-                },
-                Err(error) => {
-                    config_error_message.set(Some(error.message));
-                }
-            }
-        })
-    };
-
     let get_cut_disposition_input = move || {
         spawn_local_scoped(cx, async move {
             let cut_disposition_input_result = get_cut_disposition_input().await;
@@ -151,7 +129,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
         })
     };
 
-    let get_cut_disposition_output = move || {
+    let get_cut_disposition_output_fn = move || {
         spawn_local_scoped(cx, async move {
             let cut_disposition_output_result = get_cut_disposition_output().await;
             match cut_disposition_output_result {
@@ -183,14 +161,36 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
         })
     };
     
-    get_cut_disposition_output();
+    get_cut_disposition_output_fn();
+
+    let save_config = 
+    move || {
+        spawn_local_scoped(cx, async move {
+            let config = ConfigCutDispositionInput {
+                spacing: get_optional_from_boolean_and_value(*spacing_selection.get(), *spacing.get() as i32),
+                max_length: *max_length.get() as i32,
+                defined_length: get_optional_from_boolean_and_value(*defined_length_selection.get(), *defined_length.get() as i32),
+                defined_width: *defined_width.get() as i32,
+            };
+            let response = set_config_cut_disposition_input(config).await;
+            match response {
+                Ok(_) => {
+                    config_error_message.set(None);
+                    get_cut_disposition_output_fn();
+                },
+                Err(error) => {
+                    config_error_message.set(Some(error.message));
+                }
+            }
+        })
+    };
 
     view! { cx,
         div(class="columns mx-1") {
             div(class="panel ml-2 mt-3", style="width:300px") {
                 header(class="panel-heading has-background-grey-lighter level") { 
                     p(class="level-left") {"Disposição" }
-                    button(class="button is-grey level-rigth", on:click=move |_| get_cut_disposition_output()) { "Recarregar" }
+                    button(class="button is-grey level-rigth", on:click=move |_| get_cut_disposition_output_fn()) { "Recarregar" }
                 }
                 div(class="panel-block is-flex") {
                     div(class="columns") {
