@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use serde::{Deserialize, Serialize};
 
 use super::cut_disposition::Vertex;
@@ -7,6 +9,27 @@ pub struct Line {
     pub start: Vertex,
     pub end: Vertex
 }
+
+pub fn line_horizontal_closest_to_top_comparator(first: &Line, second: &Line) -> Ordering {
+    if first.start.pos_y < second.start.pos_y || (first.start.pos_y == second.start.pos_y && first.start.pos_x < second.start.pos_x) {
+        Ordering::Less
+    } else if first.start.pos_y == second.start.pos_y && first.start.pos_x == second.start.pos_x {
+        Ordering::Equal
+    } else {
+        Ordering::Greater
+    }
+}
+
+pub fn line_vertical_closest_to_left_comparator(first: &Line, second: &Line) -> Ordering {
+    if first.start.pos_x < second.start.pos_x || (first.start.pos_x == second.start.pos_x && first.start.pos_y < second.start.pos_y) {
+        Ordering::Less
+    } else if first.start.pos_x == second.start.pos_x && first.start.pos_y == second.start.pos_y {
+        Ordering::Equal
+    } else {
+        Ordering::Greater
+    }
+}
+
 
 impl Line {
     pub fn is_vertical(&self) -> bool {
@@ -34,7 +57,7 @@ impl Line {
 
     pub fn combine(&self, line: &Line) -> Line {
         let mut start = self.start.clone();
-        let mut end = line.end.clone();
+        let mut end = self.end.clone();
 
         if self.is_vertical() {
             if start.pos_y > line.start.pos_y {
@@ -69,7 +92,7 @@ mod tests {
     use crate::models::{cut_disposition::Vertex, cutting_lines::Line};
 
     #[test]
-    fn test_cross_perpend_vertical_line() {
+    fn cross_perpend_vertical_line_test() {
 
         // subject vertical line
 		let vert_l = Line {
@@ -149,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cross_perpend_horizontal_line() {
+    fn cross_perpend_horizontal_line_test() {
         // subject horizontal line
 		let horiz_l = Line {
             start: Vertex {
