@@ -13,7 +13,7 @@
 
 use serde::{Serialize, Deserialize};
 
-use super::app_error::AppError;
+use super::{app_error::AppError, cutting_lines::Line};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct CutDispositionState {
@@ -293,8 +293,8 @@ impl PositionedRectangle {
 
     pub fn get_top_line(&self) -> Line {
         Line { 
-            first_vertex: self.top_left_vertex.clone(), 
-            last_vertex: Vertex { 
+            start: self.top_left_vertex.clone(), 
+            end: Vertex { 
                 pos_x: self.top_left_vertex.pos_x + self.width, 
                 pos_y: self.top_left_vertex.pos_y, 
             }
@@ -303,11 +303,11 @@ impl PositionedRectangle {
 
     pub fn get_bottom_line(&self) -> Line {
         Line { 
-            first_vertex: Vertex { 
+            start: Vertex { 
                 pos_x: self.top_left_vertex.pos_x, 
                 pos_y: self.top_left_vertex.pos_y + self.length, 
             }, 
-            last_vertex: Vertex { 
+            end: Vertex { 
                 pos_x: self.top_left_vertex.pos_x + self.width,
                 pos_y: self.top_left_vertex.pos_y + self.length, 
             }
@@ -316,8 +316,8 @@ impl PositionedRectangle {
 
     pub fn get_left_line(&self) -> Line {
         Line { 
-            first_vertex: self.top_left_vertex.clone(),
-            last_vertex: Vertex { 
+            start: self.top_left_vertex.clone(),
+            end: Vertex { 
                 pos_x: self.top_left_vertex.pos_x, 
                 pos_y: self.top_left_vertex.pos_y + self.length, 
             }
@@ -326,11 +326,11 @@ impl PositionedRectangle {
 
     pub fn get_rigth_line(&self) -> Line {
         Line { 
-            first_vertex: Vertex { 
+            start: Vertex { 
                 pos_x: self.top_left_vertex.pos_x + self.width, 
                 pos_y: self.top_left_vertex.pos_y, 
             }, 
-            last_vertex: Vertex { 
+            end: Vertex { 
                 pos_x: self.top_left_vertex.pos_x + self.width,
                 pos_y: self.top_left_vertex.pos_y + self.length, 
             }
@@ -362,12 +362,6 @@ pub struct PositionedRectangleVertices {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct Line {
-    pub first_vertex: Vertex,
-    pub last_vertex: Vertex,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Vertex {
     pub pos_x: i32,
     pub pos_y: i32,
@@ -382,6 +376,8 @@ impl Vertex {
 
 #[cfg(test)]
 mod tests {
+    use crate::models::cutting_lines::Line;
+
     use super::*;
 
     /* 
@@ -455,11 +451,11 @@ mod tests {
 
         // expect
         let line = Line {
-            first_vertex: Vertex { 
+            start: Vertex { 
                 pos_x: 1, 
                 pos_y: 3 
             },
-            last_vertex: Vertex {
+            end: Vertex {
                 pos_x: 6, 
                 pos_y: 3
             }
@@ -487,11 +483,11 @@ mod tests {
 
         // expect
         let line = Line {
-            first_vertex: Vertex { 
+            start: Vertex { 
                 pos_x: 1, 
                 pos_y: 10 
             },
-            last_vertex: Vertex {
+            end: Vertex {
                 pos_x: 6, 
                 pos_y: 10
             }
@@ -519,11 +515,11 @@ mod tests {
 
         // expect
         let line = Line {
-            first_vertex: Vertex { 
+            start: Vertex { 
                 pos_x: 1, 
                 pos_y: 3 
             },
-            last_vertex: Vertex {
+            end: Vertex {
                 pos_x: 1, 
                 pos_y: 10
             }
@@ -551,11 +547,11 @@ mod tests {
 
         // expect
         let line = Line {
-            first_vertex: Vertex { 
+            start: Vertex { 
                 pos_x: 6, 
                 pos_y: 3 
             },
-            last_vertex: Vertex {
+            end: Vertex {
                 pos_x: 6, 
                 pos_y: 10
             }
