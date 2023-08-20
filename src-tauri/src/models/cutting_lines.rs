@@ -63,3 +63,167 @@ pub struct CuttingLines {
     pub vertical_lines: Vec<Line>,
     pub horizontal_lines: Vec<Line>
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::models::{cut_disposition::Vertex, cutting_lines::Line};
+
+    #[test]
+    fn test_cross_perpend_vertical_line() {
+
+        // subject vertical line
+		let vert_l = Line {
+            start: Vertex {
+                pos_x: 10,
+                pos_y: 10
+            },
+            end: Vertex {
+                pos_x: 10,
+                pos_y: 20
+            }
+        };
+		
+		// no-crossing horizontal lines
+		let no_crossing_h_1 = Line {
+            start: Vertex {
+                pos_x: 5,
+                pos_y: 10
+            },
+            end: Vertex {
+                pos_x: 15,
+                pos_y: 10
+            }
+        };
+
+        let no_crossing_h_2 = Line {
+            start: Vertex {
+                pos_x: 10,
+                pos_y: 12
+            },
+            end: Vertex {
+                pos_x: 15,
+                pos_y: 12
+            }
+        }; 
+
+        let no_crossing_h_3 = Line {
+            start: Vertex {
+                pos_x: 5,
+                pos_y: 18
+            },
+            end: Vertex {
+                pos_x: 10,
+                pos_y: 18
+            }
+        }; 
+
+        let no_crossing_h_4 = Line {
+            start: Vertex {
+                pos_x: 5,
+                pos_y: 20
+            },
+            end: Vertex {
+                pos_x: 15,
+                pos_y: 20
+            }
+        }; 
+
+		// crossing horizontal lines
+        let crossing_h = Line {
+            start: Vertex {
+                pos_x: 5,
+                pos_y: 15
+            },
+            end: Vertex {
+                pos_x: 15,
+                pos_y: 15
+            }
+        };
+
+        assert!(!vert_l.cross_perpend(&no_crossing_h_1));
+        assert!(!vert_l.cross_perpend(&no_crossing_h_2));
+        assert!(!vert_l.cross_perpend(&no_crossing_h_3));
+        assert!(!vert_l.cross_perpend(&no_crossing_h_4));
+
+        assert_eq!(vert_l.cross_perpend(&crossing_h), true);
+    }
+
+    #[test]
+    fn test_cross_perpend_horizontal_line() {
+        // subject horizontal line
+		let horiz_l = Line {
+            start: Vertex {
+                pos_x: 10,
+                pos_y: 10
+            },
+            end: Vertex {
+                pos_x: 20,
+                pos_y: 10
+            }
+        };
+
+        // no-crossing vertical lines
+		let no_crossing_v_1 = Line {
+            start: Vertex {
+                pos_x: 10,
+                pos_y: 5
+            },
+            end: Vertex {
+                pos_x: 10,
+                pos_y: 15
+            }
+        };
+
+        let no_crossing_v_2 = Line {
+            start: Vertex {
+                pos_x: 12,
+                pos_y: 5
+            },
+            end: Vertex {
+                pos_x: 12,
+                pos_y: 10
+            }
+        };
+
+        let no_crossing_v_3 = Line {
+            start: Vertex {
+                pos_x: 18,
+                pos_y: 10
+            },
+            end: Vertex {
+                pos_x: 18,
+                pos_y: 15
+            }
+        };
+
+        let no_crossing_v_4 = Line {
+            start: Vertex {
+                pos_x: 20,
+                pos_y: 5
+            },
+            end: Vertex {
+                pos_x: 20,
+                pos_y: 15
+            }
+        };
+
+        // crossing vertical lines
+        let crossing_v = Line {
+            start: Vertex {
+                pos_x: 15,
+                pos_y: 5
+            },
+            end: Vertex {
+                pos_x: 15,
+                pos_y: 15
+            }
+        };
+
+        assert!(!horiz_l.cross_perpend(&no_crossing_v_1));
+        assert!(!horiz_l.cross_perpend(&no_crossing_v_2));
+        assert!(!horiz_l.cross_perpend(&no_crossing_v_3));
+        assert!(!horiz_l.cross_perpend(&no_crossing_v_4));
+
+        assert!(horiz_l.cross_perpend(&crossing_v));
+    }
+}
