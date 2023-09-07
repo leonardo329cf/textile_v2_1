@@ -1,0 +1,7 @@
+M103 (desce prensor de avanco)
+M101 (avanca desbobinador)
+M303 (aguarda 2 segundo)
+M201 (Para o desbobinador)
+M00 (INSIRA O TECIDO)
+M203 (sobe prensor de avanco para pegar tecido)
+M101 (Avanca desbobinador)

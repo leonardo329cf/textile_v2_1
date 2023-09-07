@@ -1,0 +1,3 @@
+M303 (aguarda os eixos pararem)
+M204(orienta lamina em y)
+M105(abaixa lamina)

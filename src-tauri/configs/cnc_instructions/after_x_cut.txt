@@ -1,0 +1,3 @@
+M303 (aguarda os eixos pararem)
+M205 (sobe lamina)
+M203 (sobe regua x)

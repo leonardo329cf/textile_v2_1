@@ -1,0 +1,4 @@
+M303 (aguarda 1,5 s os eixos pararem)
+M104 (orienta lamina em x)
+M103 (Desce prensor)
+M105 (abaixa lamina)
