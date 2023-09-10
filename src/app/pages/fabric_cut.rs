@@ -244,7 +244,7 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
             defined_width.set(0.0);
         } else {
             defined_width.set(0.0);
-            
+            selected_fabric.set(String::from("0"));
             if let Some(table) = (*cutting_table_list.get())
             .iter()
             .find(|item| item.id.to_string() == *selected_cutting_table.get()) {
