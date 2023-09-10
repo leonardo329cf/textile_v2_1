@@ -5,6 +5,7 @@ use crate::app::{services::{cut_disposition_service::{get_cut_disposition_input,
 enum SelectedPanel {
     Config,
     Pieces,
+    Info
 }
 
 #[component]
@@ -15,6 +16,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     let set_config_panel_active = |_| active_panel.set(SelectedPanel::Config);
 
     let set_pieces_panel_active = |_| active_panel.set(SelectedPanel::Pieces);
+
+    let set_info_panel_active = |_| active_panel.set(SelectedPanel::Info);
 
     let defined_width = create_signal(cx, 0.0);
     let max_length = create_signal(cx, 0.0);
@@ -590,6 +593,56 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                             span(class="card-footer-item mx-1 has-text-white has-background-danger") { "Sobraram" }
                             span(class="card-footer-item mx-1 has-background-warning") { "Mostruário" }
                             span(class="card-footer-item mx-1 has-text-white has-background-black") { "Área proibida" }
+                        }
+                    }
+                }
+
+
+                div(class="card") {
+                    a(on:click=set_info_panel_active) {
+                        header(class="card-header has-background-grey-lighter") {
+                            p(class="card-header-title") {
+                                "Informações"
+                            }
+                        }
+                    }
+                    div(id="collapsible-card-pieces", class=(match *active_panel.get() {SelectedPanel::Info => "", _ => "is-hidden"})) {
+                        div(class="card-content") {
+                            div(class="columns") {
+                                div(class="column field") {
+                                    label(class="label") {
+                                        "Área total(m³)"
+                                    }
+                                    p {
+                                        (format!("{}", (total_area.get().abs() / 1_000_000_f64)))
+                                    }
+                                }
+                                div(class="column field") {
+                                    label(class="label") {
+                                        "Área aproveitada(m³)"
+                                    }
+                                    p {
+                                        (format!("{}", (used_area.get().abs() / 1_000_000_f64)))
+                                    }
+                                }
+                                div(class="column field") {
+                                    label(class="label") {
+                                        "Aproveitamento(%)"
+                                    }
+                                    p {
+                                        (format!("{:.2}", usage.get()))
+                                    }
+                                }
+                                div(class="column field") {
+                                    label(class="label") {
+                                        "Comprimento utilizado(mm)"
+                                    }
+                                    p {
+                                        (length_used.get())
+                                    }
+                                }
+                            }
+                            
                         }
                     }
                 }
