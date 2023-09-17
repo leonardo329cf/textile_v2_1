@@ -1,4 +1,4 @@
-use chrono::{Local};
+use chrono::Local;
 
 use crate::{services::file_service::{get_file_text, write_to_new_file}, models::cutting_lines::Line};
 
@@ -26,7 +26,7 @@ pub async fn generate_gcode_file(
 
     let mut instructions = String::new();
 
-    instructions.push_str(&get_title_comment(&name));
+    instructions.push_str(&get_title_comment(name));
 
 
     instructions.push_str(&get_start_program(&start_program_file_path).await?);
@@ -66,7 +66,7 @@ async fn get_pull_textile_instruction(length_to_pull: u32, pick_textile_file_pat
 
     let mut instructions = String::new(); 
 
-    instructions.push_str("Inicio posicionar tecido");
+    instructions.push_str("( Inicio posicionar tecido )");
     instructions.push('\n');
 
     instructions.push_str(&pick_textile_instruction);
@@ -78,7 +78,7 @@ async fn get_pull_textile_instruction(length_to_pull: u32, pick_textile_file_pat
     instructions.push_str(&drop_textile_instruction);
     instructions.push('\n');
 
-    instructions.push_str("Fim posicionar tecido");
+    instructions.push_str("( Fim posicionar tecido )");
     instructions.push('\n');
     instructions.push('\n');
 
@@ -86,7 +86,7 @@ async fn get_pull_textile_instruction(length_to_pull: u32, pick_textile_file_pat
 }
 
 async fn get_start_program(start_program_file_path: &str) -> Result<String, FileError> {
-    let start_program_instruction = get_file_text(&start_program_file_path).await?;
+    let start_program_instruction = get_file_text(start_program_file_path).await?;
 
     let mut instructions = String::new(); 
 
@@ -104,8 +104,8 @@ async fn get_start_program(start_program_file_path: &str) -> Result<String, File
 }
 
 async fn get_horizontal_lines(horizontal_lines: Vec<Line>, before_x_cut_file_path: &str, after_x_cut_file_path: &str) -> Result<String, FileError> {
-    let before_x_cut_instruction = get_file_text(&before_x_cut_file_path).await?;
-    let after_x_cut_instruction = get_file_text(&after_x_cut_file_path).await?;
+    let before_x_cut_instruction = get_file_text(before_x_cut_file_path).await?;
+    let after_x_cut_instruction = get_file_text(after_x_cut_file_path).await?;
 
     let mut instructions = String::new();
 
@@ -141,8 +141,8 @@ async fn get_horizontal_lines(horizontal_lines: Vec<Line>, before_x_cut_file_pat
 }
 
 async fn get_vertical_lines(vertical_lines: Vec<Line>, before_y_cut_file_path: &str, after_y_cut_file_path: &str) -> Result<String, FileError> {
-    let before_y_cut_instruction = get_file_text(&before_y_cut_file_path).await?;
-    let after_y_cut_instruction = get_file_text(&after_y_cut_file_path).await?;
+    let before_y_cut_instruction = get_file_text(before_y_cut_file_path).await?;
+    let after_y_cut_instruction = get_file_text(after_y_cut_file_path).await?;
 
     let mut instructions = String::new();
 

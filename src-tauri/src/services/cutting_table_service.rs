@@ -63,7 +63,7 @@ pub async fn update(
 
     match result {
         Ok(table) => Ok(table),
-        Err(error) => Err(AppError::new(DEFAULT_ERROR_CODE, "Falha ao salvar Mesa")),
+        Err(_error) => Err(AppError::new(DEFAULT_ERROR_CODE, "Falha ao salvar Mesa")),
     }
 }
 

@@ -16,6 +16,8 @@ use pages::{
     piece::{PieceItemPage, EditPieceItemPage}
 };
 
+use crate::app::pages::generate_gcode::GenerateGCodePage;
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "tauri"], catch)]
@@ -81,6 +83,9 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                                 piece_type_id = *piece_type_id,
                                 id = *id
                             ) {}
+                        },
+                        AppRoutes::GenerateGCode => view! {
+                            cx, GenerateGCodePage {}
                         }
                     }
                 )}
@@ -109,4 +114,6 @@ enum AppRoutes {
     PieceItem,
     #[to("/edit-piece-item/<_>/<_>")]
     EditPieceItem(i32, u32),
+    #[to("/generate-g-code")]
+    GenerateGCode,
 }

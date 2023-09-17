@@ -1,5 +1,8 @@
+use std::path;
+
+use tauri::api::path::home_dir;
 use thiserror::Error;
-use tokio::{fs::OpenOptions, io::{AsyncReadExt, AsyncWriteExt}};
+use tokio::{fs::{OpenOptions, self}, io::{AsyncReadExt, AsyncWriteExt}};
 
 #[derive(Error, Debug)]
 pub enum FileError {
@@ -27,7 +30,22 @@ pub async fn get_file_text(path: &str) -> Result<String, FileError> {
     Ok(output)
 }
 
+pub async fn create_gcode_folder_in_home_dir_if_missing() {
+    let mut path = "gcode".to_string();
+    if let Some(home_path_buf) = home_dir() {
+        if let Some(home_str) = home_path_buf.to_str() {
+            path = format!("{}{}{}", 
+            home_str, 
+            path::MAIN_SEPARATOR_STR, 
+            "gcode");
+        }
+    }
+
+    let _ = fs::create_dir_all(path).await;
+}
+
 pub async fn write_to_new_file(path: &str, content: &str) -> Result<(), FileError> {
+    create_gcode_folder_in_home_dir_if_missing().await;
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)

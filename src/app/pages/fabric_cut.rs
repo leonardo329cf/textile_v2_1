@@ -1,6 +1,6 @@
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 
-use crate::app::{services::{cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, get_cut_disposition_output, self}, cutting_table_service::get_all_cutting_table, fabric_service::get_all_fabric}, utils::utils::get_optional_from_boolean_and_value, log, models::{cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle, CutDispositionOutput}, cutting_table::CuttingTable, fabric::Fabric}};
+use crate::app::{services::{cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, get_cut_disposition_output}, cutting_table_service::get_all_cutting_table, fabric_service::get_all_fabric}, utils::utils::get_optional_from_boolean_and_value, models::{cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle}, cutting_table::CuttingTable, fabric::Fabric}};
 
 enum SelectedPanel {
     Config,
@@ -642,7 +642,11 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                     }
                                 }
                             }
-                            
+                            div(class="columns") {
+                                div(class="column") {
+                                    a(class="button is-responsive is-info", href="/generate-g-code") { "Gerar G-code" }
+                                }
+                            }
                         }
                     }
                 }
