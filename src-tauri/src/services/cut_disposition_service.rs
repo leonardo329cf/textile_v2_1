@@ -334,11 +334,22 @@ fn create_available_vertices_for_prohibited_area(
                 pos_y: 0 }
         );
 
-        // add vertex in the same row of the prohibited, in the zero horizontal position, this avoid wasting the space on left of the prohibited area
+        vertex_list.push(
+            Vertex { 
+                pos_x: prohibited_area.top_left_vertex.pos_x + prohibited_area.width, 
+                pos_y: 0 }
+        );
+
         vertex_list.push(
             Vertex { 
                 pos_x: 0, 
                 pos_y: prohibited_area.top_left_vertex.pos_y }
+        );
+
+        vertex_list.push(
+            Vertex { 
+                pos_x: 0, 
+                pos_y: prohibited_area.top_left_vertex.pos_y + prohibited_area.length }
         );
 
         vertex_list
@@ -650,22 +661,20 @@ mod tests {
 
     /* 
     Assert that vertices are generated correctly
-    for spacing = 3
-        (1, 0)
-            X
+    for spacing = 0
+          (1, 0)        (6, 0)
+            X           X
 
-          (1, 3)    (6, 3)      (9, 3)
-        X   | --------- |       X
-     (0, 3) |     5     |
+    (0, 3) (1, 3)    (6, 3)
+        X   | --------- X
+            |     5     |
             |           |
             | 7         |
             |           |
             |           |
-            |-----------|
-        (1, 10)      (6, 10)
+        X   X-----------|
+    (0, 10) (1, 10)     (6, 10)
 
-            X
-        (1, 13)
     */
     #[test]
     fn create_available_vertices_for_prohibited_area_test() {
@@ -698,8 +707,16 @@ mod tests {
                 pos_y: 0
             },
             Vertex { 
+                pos_x: 6, 
+                pos_y: 0
+            },
+            Vertex { 
                 pos_x: 0, 
                 pos_y: 3
+            },
+            Vertex { 
+                pos_x: 0, 
+                pos_y: 10
             }
         ];
 
