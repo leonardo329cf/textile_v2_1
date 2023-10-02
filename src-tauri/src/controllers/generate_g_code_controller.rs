@@ -3,7 +3,7 @@ use std::{time::Duration, path};
 use tauri::{State, api::path::home_dir};
 use tokio::time::sleep;
 
-use crate::{CutDispositionInputState, models::{app_error::AppError, cut_disposition::{CutDispositionInput, CutDispositionOutput}}, services::{cut_disposition_service::organize_disposition, cutting_lines_service::define_cutting_lines, gcode_service::generate_gcode_file, file_service::FileError}};
+use crate::{CutDispositionInputState, models::{app_error::AppError, cut_disposition::{CutDispositionInput, CutDispositionOutput}}, services::{cut_disposition_service::organize_disposition, cutting_lines_service::define_cutting_lines, gcode_service::generate_gcode_file, file_service::{FileError, GENERATED_FILES_FOLDER, GCODE_FOLDER}}};
 
 #[tauri::command]
 pub async fn generate_g_code(file_name: String, pull_textile: bool, state: State<'_, CutDispositionInputState>) -> Result<String, AppError> {
@@ -33,10 +33,12 @@ pub async fn generate_g_code(file_name: String, pull_textile: bool, state: State
     let mut home_path = "gcode".to_string();
     if let Some(home_path_buf) = home_dir() {
         if let Some(home_str) = home_path_buf.to_str() {
-            home_path = format!("{}{}{}", 
+            home_path = format!("{}{}{}{}{}", 
             home_str, 
-            path::MAIN_SEPARATOR_STR, 
-            "gcode");
+            path::MAIN_SEPARATOR_STR,
+            GENERATED_FILES_FOLDER,
+            path::MAIN_SEPARATOR_STR,
+            GCODE_FOLDER);
         }
     }
 

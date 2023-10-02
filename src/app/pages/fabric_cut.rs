@@ -643,8 +643,11 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                 }
                             }
                             div(class="columns") {
-                                div(class="column") {
-                                    a(class="button is-responsive is-info", href="/generate-g-code") { "Gerar G-code" }
+                                div(class="column level") {
+                                    a(class="button is-responsive is-info level-item", href="/generate-g-code") { "Gerar G-code" }
+                                }
+                                div(class="column level") {
+                                    a(class="button is-responsive is-info level-item", href="/export-disposition") { "Exportar Disposição" }
                                 }
                             }
                         }

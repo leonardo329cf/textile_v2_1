@@ -16,7 +16,7 @@ use pages::{
     piece::{PieceItemPage, EditPieceItemPage}
 };
 
-use crate::app::pages::generate_gcode::GenerateGCodePage;
+use crate::app::pages::{generate_gcode::GenerateGCodePage, export_disposition::ExportDispositionPage};
 
 #[wasm_bindgen]
 extern "C" {
@@ -86,7 +86,10 @@ fn AppRouter<G: Html>(cx: Scope) -> View<G> {
                         },
                         AppRoutes::GenerateGCode => view! {
                             cx, GenerateGCodePage {}
-                        }
+                        },
+                        AppRoutes::ExportDisposition => view!(
+                            cx, ExportDispositionPage {}
+                        )
                     }
                 )}
             }
@@ -116,4 +119,6 @@ enum AppRoutes {
     EditPieceItem(i32, u32),
     #[to("/generate-g-code")]
     GenerateGCode,
+    #[to("/export-disposition")]
+    ExportDisposition,
 }

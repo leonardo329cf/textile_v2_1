@@ -43,9 +43,9 @@ pub async fn generate_gcode_file(
 
     instructions.push_str(&get_end_program(&end_program_file_path).await?);
 
-    write_to_new_file(&format!("{}\\{}.txt", output_folder_path, name), &instructions).await?;
+    let path = write_to_new_file(&format!("{}\\{}.txt", output_folder_path, name), &instructions).await?;
 
-    Ok("Arquivo criado".to_string())
+    Ok(format!("Arquivo criado: {}", path))
 }
 
 fn get_title_comment(name: &str) -> String {

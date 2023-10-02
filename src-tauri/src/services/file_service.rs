@@ -4,6 +4,10 @@ use tauri::api::path::home_dir;
 use thiserror::Error;
 use tokio::{fs::{OpenOptions, self}, io::{AsyncReadExt, AsyncWriteExt}};
 
+pub const GENERATED_FILES_FOLDER: &str = "programa_textile";
+pub const GCODE_FOLDER: &str = "gcode";
+pub const DISPOSITION_FOLDER: &str = "disposition";
+
 #[derive(Error, Debug)]
 pub enum FileError {
     #[error("Falha ao abrir localizado em: {path:?}")]
@@ -30,22 +34,46 @@ pub async fn get_file_text(path: &str) -> Result<String, FileError> {
     Ok(output)
 }
 
-pub async fn create_gcode_folder_in_home_dir_if_missing() {
-    let mut path = "gcode".to_string();
+pub async fn create_folder_structure_in_home_dir_if_missing() {
+    let mut path = format!("{}{}{}", 
+        GENERATED_FILES_FOLDER,
+        path::MAIN_SEPARATOR_STR,
+        GCODE_FOLDER
+    );
     if let Some(home_path_buf) = home_dir() {
         if let Some(home_str) = home_path_buf.to_str() {
-            path = format!("{}{}{}", 
+            path = format!("{}{}{}{}{}", 
             home_str, 
-            path::MAIN_SEPARATOR_STR, 
-            "gcode");
+            path::MAIN_SEPARATOR_STR,
+            GENERATED_FILES_FOLDER,
+            path::MAIN_SEPARATOR_STR,
+            GCODE_FOLDER);
+        }
+    }
+
+    let _ = fs::create_dir_all(path).await;
+
+    let mut path = format!("{}{}{}", 
+        GENERATED_FILES_FOLDER,
+        path::MAIN_SEPARATOR_STR,
+        DISPOSITION_FOLDER
+    );
+    if let Some(home_path_buf) = home_dir() {
+        if let Some(home_str) = home_path_buf.to_str() {
+            path = format!("{}{}{}{}{}", 
+            home_str, 
+            path::MAIN_SEPARATOR_STR,
+            GENERATED_FILES_FOLDER,
+            path::MAIN_SEPARATOR_STR,
+            DISPOSITION_FOLDER);
         }
     }
 
     let _ = fs::create_dir_all(path).await;
 }
 
-pub async fn write_to_new_file(path: &str, content: &str) -> Result<(), FileError> {
-    create_gcode_folder_in_home_dir_if_missing().await;
+pub async fn write_to_new_file(path: &str, content: &str) -> Result<String, FileError> {
+    create_folder_structure_in_home_dir_if_missing().await;
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -58,5 +86,5 @@ pub async fn write_to_new_file(path: &str, content: &str) -> Result<(), FileErro
             path: path.to_owned(),
         })?;
 
-    Ok(())
+    Ok(path.to_string())
 }
