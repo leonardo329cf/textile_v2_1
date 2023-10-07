@@ -21,6 +21,12 @@ pub async fn get_about_text() -> Result<String, AboutServiceError> {
         Err(error) => match error {
             FileError::FailedToReadFile { path } => {
                 Err(AboutServiceError::FailedToReadFile { path })
+            },
+            FileError::FailedToOpenFile { path } => {
+                Err(AboutServiceError::FailedToReadFile { path })
+            },
+            FileError::FailedToWriteFile { path } => {
+                Err(AboutServiceError::FailedToReadFile { path })
             }
         },
     }

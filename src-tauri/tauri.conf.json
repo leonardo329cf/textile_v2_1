@@ -16,6 +16,10 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "dialog": {
+        "open": true,
+        "save": true
       }
     },
     "bundle": {
@@ -30,7 +34,16 @@
         "icons/icon.ico"
       ],
       "resources": [
-        "configs/about.txt"
+        "configs/about.txt",
+        "configs/cnc_instructions/after_x_cut.txt",
+        "configs/cnc_instructions/after_y_cut.txt",
+        "configs/cnc_instructions/before_x_cut.txt",
+        "configs/cnc_instructions/before_y_cut.txt",
+        "configs/cnc_instructions/drop_textile.txt",
+        "configs/cnc_instructions/end_program.txt",
+        "configs/cnc_instructions/pick_textile.txt",
+        "configs/cnc_instructions/start_program.txt",
+        "gcode"
       ]
     },
     "security": {

@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use crate::models::cut_disposition::{CutDispositionInput, Vertex, PositionedRectangle, PositionedRectangleVertices, Rectangle, CutDispositionOutput};
 
 
-fn organized_disposition(cut_disposition_input: &CutDispositionInput) -> CutDispositionOutput {
+pub fn organize_disposition(cut_disposition_input: &CutDispositionInput) -> CutDispositionOutput {
     let max_length = match cut_disposition_input.defined_length {
         Some(defined_length) => defined_length,
         None => cut_disposition_input.max_length,
@@ -17,12 +17,11 @@ fn organized_disposition(cut_disposition_input: &CutDispositionInput) -> CutDisp
 
     let prohibited_area_list = cut_disposition_input.prohibited_area_list.clone();
 
-
     let MainRectangleOrganized { 
-        mut possible_vertex_for_rectangle_list, 
+        possible_vertex_for_rectangle_list, 
         unused_rectangles_list, 
         positioned_rectangles_list, 
-        length_used 
+        mut length_used 
     } = organize_main_rectangles( 
         max_length, 
         spacing, 
@@ -30,6 +29,10 @@ fn organized_disposition(cut_disposition_input: &CutDispositionInput) -> CutDisp
         &rectangles_list, 
         &prohibited_area_list
     );
+
+    if let Some(defined_length) = cut_disposition_input.defined_length {
+        length_used = defined_length;
+    }
 
     let mut positioned_showcase_list = Vec::<PositionedRectangle>::new();
     
@@ -46,11 +49,28 @@ fn organized_disposition(cut_disposition_input: &CutDispositionInput) -> CutDisp
             )
         )
     }
+    
+    let total_area = max_width * length_used;
+
+    let used_area = positioned_rectangles_list.iter().fold(0, |sum, value| sum + value.get_area());
+
+    let mut usage = 0.0;
+    if total_area != 0 && used_area != 0 {
+        usage = (used_area as f64) / (total_area as f64);
+    }
 
     CutDispositionOutput { 
         positioned_rectangles_list, 
         showcase_rectangles_located_list: positioned_showcase_list, 
-        unused_rectangles_list 
+        unused_rectangles_list,
+        prohibited_area_list,
+        length_used,
+        total_area,
+        used_area,
+        usage,
+        max_length: cut_disposition_input.max_length,
+        defined_length: cut_disposition_input.defined_length,
+        defined_width: max_width
     }
 }
 
@@ -314,11 +334,22 @@ fn create_available_vertices_for_prohibited_area(
                 pos_y: 0 }
         );
 
-        // add vertex in the same row of the prohibited, in the zero horizontal position, this avoid wasting the space on left of the prohibited area
+        vertex_list.push(
+            Vertex { 
+                pos_x: prohibited_area.top_left_vertex.pos_x + prohibited_area.width, 
+                pos_y: 0 }
+        );
+
         vertex_list.push(
             Vertex { 
                 pos_x: 0, 
                 pos_y: prohibited_area.top_left_vertex.pos_y }
+        );
+
+        vertex_list.push(
+            Vertex { 
+                pos_x: 0, 
+                pos_y: prohibited_area.top_left_vertex.pos_y + prohibited_area.length }
         );
 
         vertex_list
@@ -630,22 +661,20 @@ mod tests {
 
     /* 
     Assert that vertices are generated correctly
-    for spacing = 3
-        (1, 0)
-            X
+    for spacing = 0
+          (1, 0)        (6, 0)
+            X           X
 
-          (1, 3)    (6, 3)      (9, 3)
-        X   | --------- |       X
-     (0, 3) |     5     |
+    (0, 3) (1, 3)    (6, 3)
+        X   | --------- X
+            |     5     |
             |           |
             | 7         |
             |           |
             |           |
-            |-----------|
-        (1, 10)      (6, 10)
+        X   X-----------|
+    (0, 10) (1, 10)     (6, 10)
 
-            X
-        (1, 13)
     */
     #[test]
     fn create_available_vertices_for_prohibited_area_test() {
@@ -678,8 +707,16 @@ mod tests {
                 pos_y: 0
             },
             Vertex { 
+                pos_x: 6, 
+                pos_y: 0
+            },
+            Vertex { 
                 pos_x: 0, 
                 pos_y: 3
+            },
+            Vertex { 
+                pos_x: 0, 
+                pos_y: 10
             }
         ];
 

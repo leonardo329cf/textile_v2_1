@@ -13,7 +13,7 @@
 
 use serde::{Serialize, Deserialize};
 
-use super::app_error::AppError;
+use super::{app_error::AppError, cutting_lines::Line};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct CutDispositionState {
@@ -222,11 +222,19 @@ pub struct CutDispositionInput {
     pub defined_width: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CutDispositionOutput {
     pub positioned_rectangles_list: Vec<PositionedRectangle>,
     pub showcase_rectangles_located_list: Vec<PositionedRectangle>,
     pub unused_rectangles_list: Vec<Rectangle>,
+    pub prohibited_area_list: Vec<PositionedRectangle>,
+    pub length_used: i32,
+    pub total_area: i32,
+    pub used_area: i32,
+    pub usage: f64,
+    pub max_length: i32,
+    pub defined_length: Option<i32>,
+    pub defined_width: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -240,6 +248,10 @@ impl Rectangle {
         self.id == rectangle.id &&
         self.width == rectangle.width &&
         self.length == rectangle.length
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.width > 0 && self.length > 0
     }
 }
 
@@ -279,11 +291,65 @@ impl PositionedRectangle {
         }
     }
 
+    pub fn get_top_line(&self) -> Line {
+        Line { 
+            start: self.top_left_vertex.clone(), 
+            end: Vertex { 
+                pos_x: self.top_left_vertex.pos_x + self.width, 
+                pos_y: self.top_left_vertex.pos_y, 
+            }
+        }
+    }
+
+    pub fn get_bottom_line(&self) -> Line {
+        Line { 
+            start: Vertex { 
+                pos_x: self.top_left_vertex.pos_x, 
+                pos_y: self.top_left_vertex.pos_y + self.length, 
+            }, 
+            end: Vertex { 
+                pos_x: self.top_left_vertex.pos_x + self.width,
+                pos_y: self.top_left_vertex.pos_y + self.length, 
+            }
+        }
+    }
+
+    pub fn get_left_line(&self) -> Line {
+        Line { 
+            start: self.top_left_vertex.clone(),
+            end: Vertex { 
+                pos_x: self.top_left_vertex.pos_x, 
+                pos_y: self.top_left_vertex.pos_y + self.length, 
+            }
+        }
+    }
+
+    pub fn get_rigth_line(&self) -> Line {
+        Line { 
+            start: Vertex { 
+                pos_x: self.top_left_vertex.pos_x + self.width, 
+                pos_y: self.top_left_vertex.pos_y, 
+            }, 
+            end: Vertex { 
+                pos_x: self.top_left_vertex.pos_x + self.width,
+                pos_y: self.top_left_vertex.pos_y + self.length, 
+            }
+        }
+    }
+
     pub fn equals(&self, positioned_rectangle: &PositionedRectangle) -> bool {
         self.id == positioned_rectangle.id &&
         self.width == positioned_rectangle.width &&
         self.length == positioned_rectangle.length &&
         self.top_left_vertex == positioned_rectangle.top_left_vertex
+    }
+    pub fn get_area(&self) -> i32 {
+        self.width * self.length
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.width > 0 && self.length > 0 && 
+        self.top_left_vertex.pos_x >= 0 && self.top_left_vertex.pos_y >= 0
     }
 }
 
@@ -293,12 +359,6 @@ pub struct PositionedRectangleVertices {
     pub top_rigth_vertex: Vertex,
     pub bottom_left_vertex: Vertex,
     pub bottom_rigth_vertex: Vertex,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-pub struct Line {
-    pub first_vertex: Vertex,
-    pub last_vertex: Vertex,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -316,6 +376,8 @@ impl Vertex {
 
 #[cfg(test)]
 mod tests {
+    use crate::models::cutting_lines::Line;
+
     use super::*;
 
     /* 
@@ -369,5 +431,133 @@ mod tests {
 
         // assert
         assert_eq!(vertices, rectangle.get_vertices());
+    }
+
+    #[test]
+    fn get_top_line_test() {
+        // input
+        let top_left_vertex = Vertex {
+            pos_x: 1,
+            pos_y: 3,
+        };
+
+        let rectangle = 
+        PositionedRectangle { 
+            id: 1,
+            width: 5, 
+            length: 7, 
+            top_left_vertex: top_left_vertex.clone(),
+        };
+
+        // expect
+        let line = Line {
+            start: Vertex { 
+                pos_x: 1, 
+                pos_y: 3 
+            },
+            end: Vertex {
+                pos_x: 6, 
+                pos_y: 3
+            }
+        };
+
+        // assert
+        assert_eq!(line, rectangle.get_top_line());
+    }
+
+    #[test]
+    fn get_bottom_line_test() {
+        // input
+        let top_left_vertex = Vertex {
+            pos_x: 1,
+            pos_y: 3,
+        };
+
+        let rectangle = 
+        PositionedRectangle { 
+            id: 1,
+            width: 5, 
+            length: 7, 
+            top_left_vertex: top_left_vertex.clone(),
+        };
+
+        // expect
+        let line = Line {
+            start: Vertex { 
+                pos_x: 1, 
+                pos_y: 10 
+            },
+            end: Vertex {
+                pos_x: 6, 
+                pos_y: 10
+            }
+        };
+
+        // assert
+        assert_eq!(line, rectangle.get_bottom_line());
+    }
+
+    #[test]
+    fn get_left_line_test() {
+        // input
+        let top_left_vertex = Vertex {
+            pos_x: 1,
+            pos_y: 3,
+        };
+
+        let rectangle = 
+        PositionedRectangle { 
+            id: 1,
+            width: 5, 
+            length: 7, 
+            top_left_vertex: top_left_vertex.clone(),
+        };
+
+        // expect
+        let line = Line {
+            start: Vertex { 
+                pos_x: 1, 
+                pos_y: 3 
+            },
+            end: Vertex {
+                pos_x: 1, 
+                pos_y: 10
+            }
+        };
+
+        // assert
+        assert_eq!(line, rectangle.get_left_line());
+    }
+
+    #[test]
+    fn get_rigth_line_test() {
+        // input
+        let top_left_vertex = Vertex {
+            pos_x: 1,
+            pos_y: 3,
+        };
+
+        let rectangle = 
+        PositionedRectangle { 
+            id: 1,
+            width: 5, 
+            length: 7, 
+            top_left_vertex: top_left_vertex.clone(),
+        };
+
+        // expect
+        let line = Line {
+            start: Vertex { 
+                pos_x: 6, 
+                pos_y: 3 
+            },
+            end: Vertex {
+                pos_x: 6, 
+                pos_y: 10
+            }
+        };
+
+        // assert
+        assert_eq!(line, rectangle.get_rigth_line());
     }
 }

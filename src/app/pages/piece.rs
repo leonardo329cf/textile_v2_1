@@ -153,7 +153,7 @@ pub fn PieceItemPage< G: Html>(cx: Scope<'_>) -> View<G> {
                         }
                     }
                     div(class="field") {
-                        label(class="label") { "COmprimento (mm)" }
+                        label(class="label") { "Comprimento (mm)" }
                         div (class="control")  {
                             input(
                                 class="input", 

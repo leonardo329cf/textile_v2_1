@@ -13,8 +13,6 @@
 
 use serde::{Serialize, Deserialize};
 
-use super::app_error::AppError;
-
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct CutDispositionInput {
     pub rectangles_list: Vec<Rectangle>,
@@ -33,6 +31,22 @@ pub struct ConfigCutDispositionInput {
     pub defined_length: Option<i32>,
     pub defined_width: i32,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct CutDispositionOutput {
+    pub positioned_rectangles_list: Vec<PositionedRectangle>,
+    pub showcase_rectangles_located_list: Vec<PositionedRectangle>,
+    pub unused_rectangles_list: Vec<Rectangle>,
+    pub prohibited_area_list: Vec<PositionedRectangle>,
+    pub length_used: i32,
+    pub total_area: i32,
+    pub used_area: i32,
+    pub usage: f64,
+    pub max_length: i32,
+    pub defined_length: Option<i32>,
+    pub defined_width: i32,
+}
+
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Rectangle {
