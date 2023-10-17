@@ -22,7 +22,7 @@ use controllers::{
     fabric_controller::{create_fabric, delete_fabric, get_all_fabric, get_fabric, update_fabric},
 };
 
-use crate::controllers::{cut_disposition_controller::organize_cut_disposition, generate_g_code_controller::generate_g_code, export_import_disposition_controller::export_disposition};
+use crate::controllers::{cut_disposition_controller::organize_cut_disposition, generate_g_code_controller::generate_g_code, export_import_disposition_controller::{export_disposition, import_disposition}};
 
 mod controllers;
 mod models;
@@ -47,7 +47,7 @@ async fn main() -> Result<(), ()> {
             get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input,
             create_piece, get_piece, get_showcase, get_prohibited_area, edit_piece, 
             delete_piece, delete_showcase, delete_prohibited_area,
-            organize_cut_disposition, generate_g_code, export_disposition])
+            organize_cut_disposition, generate_g_code, export_disposition, import_disposition])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     Ok(())

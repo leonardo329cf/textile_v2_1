@@ -48,3 +48,45 @@ pub async fn export_disposition(
         }
     }
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct NoArgs {
+}
+
+pub async fn import_disposition() -> Result<String, AppError> { 
+    let value = invoke("import_disposition", to_value(&NoArgs {}).unwrap()).await;
+    match value {
+        Ok(ok_js_value) => {
+            let a = serde_wasm_bindgen::from_value::<String>(ok_js_value);
+            match a {
+                Ok(a) => Ok(a),
+                Err(error) => {
+                    log(error.to_string().as_str());
+                    Err(
+                        AppError {
+                            status:1, 
+                            message: "Falha importar disposição de peças".to_owned(), 
+                            timestamp: 1
+                        }
+                    )
+                }
+            }
+        },
+        Err(err_js_value) => {
+            let a = serde_wasm_bindgen::from_value::<AppError>(err_js_value);
+            match a {
+                Ok(a) => Err(a),
+                Err(error) => {
+                    log(error.to_string().as_str());
+                    Err(
+                        AppError {
+                            status:1, 
+                            message: "Falha importar disposição de peças".to_owned(), 
+                            timestamp: 1
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

@@ -1,6 +1,6 @@
 use sycamore::{prelude::*, futures::spawn_local_scoped};
 
-use crate::app::{services::{cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, get_cut_disposition_output}, cutting_table_service::get_all_cutting_table, fabric_service::get_all_fabric}, utils::utils::get_optional_from_boolean_and_value, models::{cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle}, cutting_table::CuttingTable, fabric::Fabric}};
+use crate::app::{services::{cut_disposition_service::{get_cut_disposition_input, set_config_cut_disposition_input, get_config_cut_disposition_input, get_cut_disposition_output}, cutting_table_service::get_all_cutting_table, fabric_service::get_all_fabric, export_import_service::import_disposition}, utils::utils::get_optional_from_boolean_and_value, models::{cut_disposition::{ConfigCutDispositionInput, Rectangle, PositionedRectangle}, cutting_table::CuttingTable, fabric::Fabric}};
 
 enum SelectedPanel {
     Config,
@@ -54,6 +54,8 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     let defined_width_to_draw = create_signal(cx, 0.0);
 
     let draw_error_message = create_signal(cx, Option::<String>::None);
+
+    let info_error_message = create_signal(cx, Option::<String>::None);
 
     let get_cut_disposition_input = move || {
         spawn_local_scoped(cx, async move {
@@ -170,6 +172,10 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
 
     let save_config = 
     move || {
+        draw_error_message.set(None);
+        info_error_message.set(None);
+        config_error_message.set(None);
+
         spawn_local_scoped(cx, async move {
             let config = ConfigCutDispositionInput {
                 spacing: get_optional_from_boolean_and_value(*spacing_selection.get(), *spacing.get() as i32),
@@ -235,6 +241,26 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
     };
 
     fetch_all_fabric();
+
+    let import_disposition = move || {
+        draw_error_message.set(None);
+        info_error_message.set(None);
+        config_error_message.set(None);
+
+        spawn_local_scoped(cx, async move {
+            let import_result =
+                import_disposition().await;
+
+            match import_result {
+                Ok(_value) => (),
+                Err(error) => info_error_message.set(Some(error.message))
+            };
+            get_cut_disposition_input();
+            get_cut_disposition_output_fn();
+            selected_cutting_table.set(String::from("0"));
+            selected_fabric.set(String::from("0"));
+        })
+    };
 
     create_effect(cx, || {
         config_error_message.set(None);
@@ -648,6 +674,14 @@ pub fn FabricCutPage<G: Html>(cx: Scope<'_>) -> View<G> {
                                 }
                                 div(class="column level") {
                                     a(class="button is-responsive is-info level-item", href="/export-disposition") { "Exportar Disposição" }
+                                }
+                                div(class="column level") {
+                                    a(class="button is-responsive is-info level-item", on:click=move |_| import_disposition()) { "Importar Disposição" }
+                                }
+                            }
+                            div(class="columns") {
+                                div(class="column level") {
+                                    p(class="has-text-danger") { (info_error_message.get()) }
                                 }
                             }
                         }
