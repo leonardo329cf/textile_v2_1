@@ -463,7 +463,7 @@ pub fn EditPieceItemPage< G: Html>(cx: Scope<'_>, props: EditPieceItemProps) -> 
                         }
                     }
                     div(class="field") {
-                        label(class="label") { "COmprimento (mm)" }
+                        label(class="label") { "Comprimento (mm)" }
                         div (class="control")  {
                             input(
                                 class="input", 
