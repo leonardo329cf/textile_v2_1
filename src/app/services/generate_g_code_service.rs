@@ -24,7 +24,7 @@ pub async fn generate_g_code_file(
                     Err(
                         AppError {
                             status:1, 
-                            message: "Falha ao buscar resultado da disposição de cortes".to_owned(), 
+                            message: "Falha ao gerar código g".to_owned(), 
                             timestamp: 1
                         }
                     )
@@ -40,7 +40,7 @@ pub async fn generate_g_code_file(
                     Err(
                         AppError {
                             status:1, 
-                            message: "Falha ao buscar resultado da disposição de cortes".to_owned(), 
+                            message: "Falha ao gerar código g".to_owned(), 
                             timestamp: 1
                         }
                     )
