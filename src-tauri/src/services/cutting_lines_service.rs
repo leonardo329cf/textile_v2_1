@@ -56,7 +56,7 @@ fn combine_lines(lines_to_be_combined: &Vec<Line>, lines_not_to_be_crossed: &Vec
 
         let mut can_combine = false;
 
-        for existing_result_line in &lines_result_list {
+        for (index, existing_result_line) in lines_result_list.iter().enumerate() {
 
             if line.is_same_level(existing_result_line) {
 
@@ -75,6 +75,7 @@ fn combine_lines(lines_to_be_combined: &Vec<Line>, lines_not_to_be_crossed: &Vec
                     continue;
                 } else {
                     can_combine = true;
+                    lines_result_list.remove(index);
                     lines_result_list.push(combined_line);
                     break;
                 }
