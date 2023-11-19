@@ -1,2 +1,2 @@
 M303 (aguarda os eixos pararem)
-M205(sobe lamina lamina)
+M205 (sobe lamina lamina)
