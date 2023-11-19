@@ -12,21 +12,21 @@ pub struct Line {
 
 pub fn line_horizontal_closest_to_top_comparator(first: &Line, second: &Line) -> Ordering {
     if first.start.pos_y < second.start.pos_y || (first.start.pos_y == second.start.pos_y && first.start.pos_x < second.start.pos_x) {
-        Ordering::Less
+        Ordering::Greater
     } else if first.start.pos_y == second.start.pos_y && first.start.pos_x == second.start.pos_x {
         Ordering::Equal
     } else {
-        Ordering::Greater
+        Ordering::Less
     }
 }
 
 pub fn line_vertical_closest_to_left_comparator(first: &Line, second: &Line) -> Ordering {
     if first.start.pos_x < second.start.pos_x || (first.start.pos_x == second.start.pos_x && first.start.pos_y < second.start.pos_y) {
-        Ordering::Less
+        Ordering::Greater
     } else if first.start.pos_x == second.start.pos_x && first.start.pos_y == second.start.pos_y {
         Ordering::Equal
     } else {
-        Ordering::Greater
+        Ordering::Less
     }
 }
 

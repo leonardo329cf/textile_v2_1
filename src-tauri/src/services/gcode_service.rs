@@ -30,16 +30,26 @@ pub async fn generate_gcode_file(
 
 
     instructions.push_str(&get_start_program(&start_program_file_path).await?);
+    instructions.push('\n');
+    instructions.push('\n');
 
 
     if let Some(length_to_pull) = textile_length_to_pull {
 
         instructions.push_str(&get_pull_textile_instruction(length_to_pull, &pick_textile_file_path, &drop_textile_file_path).await?);
+        instructions.push('\n');
+        instructions.push('\n');
     }
+
+    instructions.push_str(&get_vertical_lines(vertical_lines, &before_y_cut_file_path, &after_y_cut_file_path).await?);
+
+    instructions.push('\n');
+    instructions.push('\n');
 
     instructions.push_str(&get_horizontal_lines(horizontal_lines, &before_x_cut_file_path, &after_x_cut_file_path).await?);
 
-    instructions.push_str(&get_vertical_lines(vertical_lines, &before_y_cut_file_path, &after_y_cut_file_path).await?);
+    instructions.push('\n');
+    instructions.push('\n');
 
     instructions.push_str(&get_end_program(&end_program_file_path).await?);
 
