@@ -174,6 +174,7 @@ mod tests {
         assert!(cutting_lines.vertical_lines.contains(&v4));
         assert!(cutting_lines.vertical_lines.contains(&v5));
         assert!(cutting_lines.vertical_lines.contains(&v6));
+        assert!(cutting_lines.vertical_lines.len() == 7);
 
         assert!(cutting_lines.horizontal_lines.contains(&h0));
         assert!(cutting_lines.horizontal_lines.contains(&h1));
@@ -181,6 +182,7 @@ mod tests {
         assert!(cutting_lines.horizontal_lines.contains(&h3));
         assert!(cutting_lines.horizontal_lines.contains(&h4));
         assert!(cutting_lines.horizontal_lines.contains(&h5));
+        assert!(cutting_lines.horizontal_lines.len() == 6);
 
     }
 }
